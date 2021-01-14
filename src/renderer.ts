@@ -48,11 +48,11 @@ const INSTRUMENTS: {
             tuning: [0, 5, 10, 15, 19, 24].map((x) => x + 7),
           },
           {
-            name: "Drop A (A₁E₂A₂D₃F#₃B₃)",
+            name: "Drop A (A₁E₂A₂D₃F♯\uFE0E₃B₃)",
             tuning: [0, 7, 12, 17, 21, 26],
           },
           {
-            name: "Drop B (B₁F♯₂B₂E₃G♯₃C♯₄)",
+            name: "Drop B (B₁F♯\uFE0E₂B₂E₃G♯\uFE0E₃C♯\uFE0E₄)",
             tuning: [2, 9, 14, 19, 23, 28],
           },
           {
@@ -68,11 +68,11 @@ const INSTRUMENTS: {
             tuning: [0, 7, 12, 19, 24, 28].map((x) => x + 3),
           },
           {
-            name: "Open D (D₂A₂D₃F♯₃A₃D₄)",
+            name: "Open D (D₂A₂D₃F♯\uFE0E₃A₃D₄)",
             tuning: [0, 7, 12, 16, 19, 24].map((x) => x + 5),
           },
           {
-            name: "Open E (E₂B₂E₃G#₃B₃E₄)",
+            name: "Open E (E₂B₂E₃G♯\uFE0E₃B₃E₄)",
             tuning: [0, 7, 12, 16, 19, 24].map((x) => x + 7),
           },
           {
@@ -289,7 +289,7 @@ function getBaseNotes(
         ++sharps;
         break;
       case 2:
-        note += "♯♯";
+        note += "𝄪";
         hasDouble = true;
         sharps += 2;
         break;
@@ -298,7 +298,7 @@ function getBaseNotes(
         ++flats;
         break;
       case -2:
-        note += "♭♭";
+        note += "𝄫";
         hasDouble = true;
         flats += 2;
         break;
