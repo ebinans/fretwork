@@ -518,7 +518,8 @@ function darwFretboard(event: Event)
       }
     }
 
-    const COLORS = ["#eedd88", "#ee8866", "#99ddff", "#bbcc33", "#ffaabb", "#44bb99"];
+    // https://personal.sron.nl/~pault/#fig:scheme_light
+    const COLORS = ["#eedd88", "#ee8866", "#99ddff", "#bbcc33", "#ffaabb", "#44bb99", "#dddddd"];
 
     for (let y = instrument.strings - 1; y > -1; --y)
     {
