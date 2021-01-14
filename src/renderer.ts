@@ -22,6 +22,9 @@
 // SOFTWARE.
 //----------------------------------------------------------------------------------------------------------------------
 
+// //0    1     2    3    4     5    6     7    8    9     10   11
+// ["A", "A♯", "B", "C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯"];
+
 const INSTRUMENTS: {
   name: string;
   strings: number;
@@ -45,8 +48,36 @@ const INSTRUMENTS: {
             tuning: [0, 5, 10, 15, 19, 24].map((x) => x + 7),
           },
           {
+            name: "Drop A (A₁E₂A₂D₃F#₃B₃)",
+            tuning: [0, 7, 12, 17, 21, 26],
+          },
+          {
+            name: "Drop B (B₁F♯₂B₂E₃G♯₃C♯₄)",
+            tuning: [2, 9, 14, 19, 23, 28],
+          },
+          {
+            name: "Drop C (C₂G₂C₃F₃A₃D₄)",
+            tuning: [-2, 5, 10, 15, 19, 24].map((x) => x + 5),
+          },
+          {
             name: "Drop D (D₂A₂D₃G₃B₃E₄)",
             tuning: [-2, 5, 10, 15, 19, 24].map((x) => x + 7),
+          },
+          {
+            name: "Open C (C₂G₂C₃G₃C₄E₄)",
+            tuning: [0, 7, 12, 19, 24, 28].map((x) => x + 3),
+          },
+          {
+            name: "Open D (D₂A₂D₃F♯₃A₃D₄)",
+            tuning: [0, 7, 12, 16, 19, 24].map((x) => x + 5),
+          },
+          {
+            name: "Open E (E₂B₂E₃G#₃B₃E₄)",
+            tuning: [0, 7, 12, 16, 19, 24].map((x) => x + 7),
+          },
+          {
+            name: "Open G (D₂G₂D₃G₃B₃D₄)",
+            tuning: [-2, 3, 10, 15, 19, 22].map((x) => x + 7),
           },
           {
             name: "New Standard (C₂G₂D₃A₃E₄G₄)",
@@ -62,7 +93,7 @@ const INSTRUMENTS: {
       tuning:
         [
           {
-            name: "Standard (E₁A₂D₂G₂)",
+            name: "Standard (E₁A₁D₂G₂)",
             tuning: [0, 5, 10, 15].map((x) => x + 7),
           },
         ]
@@ -187,9 +218,6 @@ const SCALES: {
         ]
     }
   ]
-
-// //0    1     2    3    4     5    6     7    8    9     10   11
-// ["A", "A♯", "B", "C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯"];
 
 //----------------------------------------------------------------------------------------------------------------------
 

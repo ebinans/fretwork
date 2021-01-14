@@ -37,6 +37,10 @@ button {
 	font-size: small;
 }
 
+input[type="number"] {
+	width: 3em;
+}
+
 body {
 	background-color: #ebebeb;
 }
@@ -59,6 +63,10 @@ tr {
 #carcass tr:last-child {
 	height: 100%;
 	vertical-align: top;
+}
+
+#link {
+	float: right;
 }
 
 .settings {
