@@ -44,44 +44,44 @@ const INSTRUMENTS: {
       tuning:
         [
           {
-            name: "Standard (E₂A₂D₃G₃B₃E₄)",
-            tuning: [0, 5, 10, 15, 19, 24].map((x) => x + 7),
+            name: "Standard",
+            tuning: [7, 12, 17, 22, 26, 31],
           },
           {
-            name: "Drop A (A₁E₂A₂D₃F♯\uFE0E₃B₃)",
+            name: "Drop A",
             tuning: [0, 7, 12, 17, 21, 26],
           },
           {
-            name: "Drop B (B₁F♯\uFE0E₂B₂E₃G♯\uFE0E₃C♯\uFE0E₄)",
+            name: "Drop B",
             tuning: [2, 9, 14, 19, 23, 28],
           },
           {
-            name: "Drop C (C₂G₂C₃F₃A₃D₄)",
-            tuning: [-2, 5, 10, 15, 19, 24].map((x) => x + 5),
+            name: "Drop C",
+            tuning: [3, 10, 15, 20, 24, 29],
           },
           {
-            name: "Drop D (D₂A₂D₃G₃B₃E₄)",
-            tuning: [-2, 5, 10, 15, 19, 24].map((x) => x + 7),
+            name: "Drop D",
+            tuning: [5, 12, 17, 22, 26, 31],
           },
           {
-            name: "Open C (C₂G₂C₃G₃C₄E₄)",
-            tuning: [0, 7, 12, 19, 24, 28].map((x) => x + 3),
+            name: "Open C",
+            tuning: [3, 10, 15, 22, 27, 31],
           },
           {
-            name: "Open D (D₂A₂D₃F♯\uFE0E₃A₃D₄)",
-            tuning: [0, 7, 12, 16, 19, 24].map((x) => x + 5),
+            name: "Open D",
+            tuning: [5, 12, 17, 21, 24, 29],
           },
           {
-            name: "Open E (E₂B₂E₃G♯\uFE0E₃B₃E₄)",
-            tuning: [0, 7, 12, 16, 19, 24].map((x) => x + 7),
+            name: "Open E",
+            tuning: [7, 14, 19, 23, 26, 31],
           },
           {
-            name: "Open G (D₂G₂D₃G₃B₃D₄)",
-            tuning: [-2, 3, 10, 15, 19, 22].map((x) => x + 7),
+            name: "Open G",
+            tuning: [5, 10, 17, 22, 26, 29],
           },
           {
-            name: "New Standard (C₂G₂D₃A₃E₄G₄)",
-            tuning: [0, 7, 14, 21, 28, 31].map((x) => x + 3),
+            name: "New Standard", // Hello Robert!
+            tuning: [3, 10, 17, 24, 31, 34],
           },
         ]
     },
@@ -93,8 +93,8 @@ const INSTRUMENTS: {
       tuning:
         [
           {
-            name: "Standard (E₁A₁D₂G₂)",
-            tuning: [0, 5, 10, 15].map((x) => x + 7),
+            name: "Standard",
+            tuning: [-5, 0, 5, 10],
           },
         ]
     },
@@ -106,8 +106,8 @@ const INSTRUMENTS: {
       tuning:
         [
           {
-            name: "Soprano in C (G₄C₄E₄A₄)",
-            tuning: [0, -7, -3, 2].map((x) => x + 10),
+            name: "Soprano in C",
+            tuning: [10, 3, 7, 12].map((x) => x + 24),
           },
         ]
     }
@@ -221,6 +221,14 @@ const SCALES: {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+const CHROMATIC_NOTES = [
+  //0    1     2    3    4     5    6     7    8    9     10   11
+  ["A", "A♯", "B", "C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯"],
+  ["A", "B♭", "B", "C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭"],
+];
+
+//----------------------------------------------------------------------------------------------------------------------
+
 interface SVGElement
 {
   attr(qualifiedName: string, value: string): SVGElement;
@@ -231,6 +239,11 @@ SVGElement.prototype.attr = function (qualifiedName: string, value: string): SVG
   this.setAttribute(qualifiedName, value);
   return this;
 };
+
+function uMod(num: number, div: number): number
+{
+  return ((num % div) + div) % div;
+}
 
 function roundTwo(num: number): number
 {
@@ -246,7 +259,7 @@ function getBaseNotes(
   scale: Scale
 ): [boolean, number, number, string[]]
 {
-  const degrees = scale.degrees.map((x) => (x < 0 ? -1 : (12 + x + paramKey + paramAccidental) % 12));
+  const degrees = scale.degrees.map((x) => (x < 0 ? -1 : uMod(x + paramKey + paramAccidental, 12)));
   const baseIndex = baseNotes.findIndex((x) => x[1] == paramKey);
 
   function distance(first: number, second: number, max: number): number
@@ -277,7 +290,7 @@ function getBaseNotes(
       continue;
     }
 
-    const ix = i % baseNotes.length;
+    const ix = uMod(i, baseNotes.length);
     const acc = distance(baseNotes[ix][1], degrees[i - baseIndex], 12);
 
     let note = baseNotes[ix][0];
@@ -416,12 +429,12 @@ function darwFretboard(event: Event)
     const pageW = PAGE_SIZES[paramPageIndex][0];
     const pageH = PAGE_SIZES[paramPageIndex][1];
 
-    const degrees = scale.degrees.map((x) => (x < 0 ? -1 : (12 + x + paramKey + paramAccidental) % 12));
+    const degrees = scale.degrees.map((x) => (x < 0 ? -1 : uMod(x + paramKey + paramAccidental, 12)));
     let degreesAdd = scale.add;
 
     if (degreesAdd)
     {
-      degreesAdd = degreesAdd.map((x) => (x < 0 ? -1 : (12 + x + paramKey + paramAccidental) % 12));
+      degreesAdd = degreesAdd.map((x) => (x < 0 ? -1 : uMod(x + paramKey + paramAccidental, 12)));
     }
 
     //---
@@ -434,12 +447,6 @@ function darwFretboard(event: Event)
     const STRING_TOP = 25;
     const STRING_SPACING = 6;
     const fretSpacing = (pageW - LEFT - RIGHT) / paramFrets;
-
-    const CHROMATIC_NOTES = [
-      //0    1     2    3    4     5    6     7    8    9     10   11
-      ["A", "A♯", "B", "C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯"],
-      ["A", "B♭", "B", "C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭"],
-    ];
 
     //---
 
@@ -485,7 +492,9 @@ function darwFretboard(event: Event)
     const title = document.createElementNS(NS, "text");
 
     const acc = paramAccidental == -1 ? "♭ " : paramAccidental == 1 ? "♯ " : " ";
-    title.textContent = `${instrument.name}, ${tuning.name}, ${CHROMATIC_NOTES[0][paramKey]}${acc}${scale.name}`;
+
+    title.textContent =
+      `${instrument.name}: ${tuning.name} tuning, ${CHROMATIC_NOTES[0][paramKey]}${acc}${scale.name} scale`;
 
     title
       .attr("x", pageW / 2 + "mm")
@@ -553,7 +562,7 @@ function darwFretboard(event: Event)
     {
       for (let x = 0; x < paramFrets + 1; ++x)
       {
-        const noteIndex = (tuning.tuning[instrument.strings - y - 1] + x) % notes.length;
+        const noteIndex = uMod((tuning.tuning[instrument.strings - y - 1] + x), notes.length);
 
         const colorIndex =
           Math.trunc((12 + tuning.tuning[instrument.strings - y - 1] + x - degrees[0]) / notes.length);
@@ -713,7 +722,15 @@ window.addEventListener("DOMContentLoaded", () =>
         const op = document.createElement("option");
 
         op.value = `[${i}, ${j}]`;
-        op.text = INSTRUMENTS[i].tuning[j].name;
+        op.text = INSTRUMENTS[i].tuning[j].name + " (";
+
+        INSTRUMENTS[i].tuning[j].tuning.forEach((x: number) =>
+        {
+          op.text += CHROMATIC_NOTES[0][uMod(x, 12)] + "\uFE0E" +
+            String.fromCharCode(0x2080 + Math.floor(2 + (x - 3) / 12));
+        });
+
+        op.text += ")";
 
         opG.appendChild(op);
       }
