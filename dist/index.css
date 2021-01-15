@@ -22,6 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+@font-face {
+  font-family: "DejaVuSans";
+  src: url("font/DejaVuSans.woff2") format("woff2");
+}
+
 html,
 body {
 	width: 100%;
@@ -33,7 +38,7 @@ body,
 input,
 select,
 button {
-	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+	font-family: DejaVuSans, sans-serif;
 	font-size: small;
 }
 
