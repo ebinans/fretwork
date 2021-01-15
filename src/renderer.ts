@@ -486,7 +486,7 @@ function darwFretboard(event: Event)
     }
     else
     {
-      notes = CHROMATIC_NOTES[0];
+      notes = CHROMATIC_NOTES[paramAccidental >= 0 ? 0 : 1];
     }
 
     const title = document.createElementNS(NS, "text");
