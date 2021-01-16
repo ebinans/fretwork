@@ -456,7 +456,7 @@ function darwFretboard(event: Event)
     svg.attr("xmlns", NS)
       .attr("width", pageW + "mm")
       .attr("height", pageH + "mm")
-      .attr("font-family", "DejaVuSans, sans-serif")
+      .attr("font-family", '"DejaVu Sans", Verdana, Geneva, Tahoma, sans-serif')
       .attr("font-size", "2.6mm")
       .attr("font-weight", "bold")
       .attr("fill", "#333333");
