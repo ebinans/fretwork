@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------------------------------------------------
+﻿//----------------------------------------------------------------------------------------------------------------------
 // MIT License
 //
 // Copyright (c) 2021 Edgars Bināns
@@ -229,17 +229,6 @@ const CHROMATIC_NOTES = [
 
 //----------------------------------------------------------------------------------------------------------------------
 
-interface SVGElement
-{
-  attr(qualifiedName: string, value: string): SVGElement;
-}
-
-SVGElement.prototype.attr = function (qualifiedName: string, value: string): SVGElement
-{
-  this.setAttribute(qualifiedName, value);
-  return this;
-};
-
 function uMod(num: number, div: number): number
 {
   return ((num % div) + div) % div;
@@ -453,17 +442,19 @@ function darwFretboard(event: Event)
     const NS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(NS, "svg");
 
-    svg.attr("xmlns", NS)
-      .attr("width", pageW + "mm")
-      .attr("height", pageH + "mm")
-      .attr("font-family", '"DejaVu Sans", Verdana, Geneva, Tahoma, sans-serif')
-      .attr("font-size", "2.6mm")
-      .attr("font-weight", "bold")
-      .attr("fill", "#333333");
+    svg.setAttribute("xmlns", NS);
+    svg.setAttribute("width", pageW + "mm");
+    svg.setAttribute("height", pageH + "mm");
+    svg.setAttribute("font-family", "'DejaVu Sans', Verdana, Geneva, Tahoma, sans-serif");
+    svg.setAttribute("font-size", "2.6mm");
+    svg.setAttribute("font-weight", "bold");
+    svg.setAttribute("fill", "#333333");
 
     const background = document.createElementNS(NS, "rect");
 
-    background.attr("width", "100%").attr("height", "100%").attr("fill", "white");
+    background.setAttribute("width", "100%");
+    background.setAttribute("height", "100%");
+    background.setAttribute("fill", "white");
 
     svg.appendChild(background);
 
@@ -496,11 +487,11 @@ function darwFretboard(event: Event)
     title.textContent =
       `${instrument.name}: ${tuning.name} tuning, ${CHROMATIC_NOTES[0][paramKey]}${acc}${scale.name} scale`;
 
-    title
-      .attr("x", pageW / 2 + "mm")
-      .attr("y", PAGE_TOP + "mm")
-      .attr("text-anchor", "middle")
-      .attr("font-size", "4mm");
+
+    title.setAttribute("x", pageW / 2 + "mm");
+    title.setAttribute("y", PAGE_TOP + "mm");
+    title.setAttribute("text-anchor", "middle");
+    title.setAttribute("font-size", "4mm");
 
     svg.appendChild(title);
 
@@ -508,13 +499,13 @@ function darwFretboard(event: Event)
     {
       const line = document.createElementNS(NS, "line");
 
-      line.attr("x1", roundTwo(LEFT + fretSpacing * x) + "mm")
-        .attr("y1", roundTwo(STRING_TOP) + "mm")
-        .attr("x2", roundTwo(LEFT + fretSpacing * x) + "mm")
-        .attr("y2", roundTwo(STRING_TOP + (instrument.strings - 1) * STRING_SPACING) + "mm")
-        .attr("stroke", x == 0 ? "#333333" : "#CCCCCC")
-        .attr("stroke-width", "1mm")
-        .attr("stroke-linecap", "round");
+      line.setAttribute("x1", roundTwo(LEFT + fretSpacing * x) + "mm");
+      line.setAttribute("y1", roundTwo(STRING_TOP) + "mm");
+      line.setAttribute("x2", roundTwo(LEFT + fretSpacing * x) + "mm");
+      line.setAttribute("y2", roundTwo(STRING_TOP + (instrument.strings - 1) * STRING_SPACING) + "mm");
+      line.setAttribute("stroke", x == 0 ? "#333333" : "#CCCCCC");
+      line.setAttribute("stroke-width", "1mm");
+      line.setAttribute("stroke-linecap", "round");
 
       svg.appendChild(line);
     }
@@ -523,12 +514,12 @@ function darwFretboard(event: Event)
     {
       const line = document.createElementNS(NS, "line");
 
-      line.attr("x1", roundTwo(LEFT) + "mm")
-        .attr("y1", roundTwo(STRING_TOP + y * STRING_SPACING) + "mm")
-        .attr("x2", roundTwo(pageW - RIGHT) + "mm")
-        .attr("y2", roundTwo(STRING_TOP + y * STRING_SPACING) + "mm")
-        .attr("stroke", "black")
-        .attr("stroke-width", "0.2mm");
+      line.setAttribute("x1", roundTwo(LEFT) + "mm");
+      line.setAttribute("y1", roundTwo(STRING_TOP + y * STRING_SPACING) + "mm");
+      line.setAttribute("x2", roundTwo(pageW - RIGHT) + "mm");
+      line.setAttribute("y2", roundTwo(STRING_TOP + y * STRING_SPACING) + "mm");
+      line.setAttribute("stroke", "black");
+      line.setAttribute("stroke-width", "0.2mm");
 
       svg.appendChild(line);
     }
@@ -541,14 +532,13 @@ function darwFretboard(event: Event)
         {
           const circle = document.createElementNS(NS, "circle");
 
-          circle
-            .attr("r", roundTwo(STRING_SPACING / 6) + "mm")
-            .attr("fill", "grey")
-            .attr("cx", roundTwo(LEFT + x * fretSpacing - fretSpacing / 2) + "mm")
-            .attr(
-              "cy",
-              roundTwo(STRING_TOP + instrument.strings * STRING_SPACING + i * (STRING_SPACING / 3 + 0.5)) + "mm"
-            );
+          circle.setAttribute("r", roundTwo(STRING_SPACING / 6) + "mm");
+          circle.setAttribute("fill", "grey");
+          circle.setAttribute("cx", roundTwo(LEFT + x * fretSpacing - fretSpacing / 2) + "mm");
+          circle.setAttribute(
+            "cy",
+            roundTwo(STRING_TOP + instrument.strings * STRING_SPACING + i * (STRING_SPACING / 3 + 0.5)) + "mm"
+          );
 
           svg.appendChild(circle);
         }
@@ -586,22 +576,21 @@ function darwFretboard(event: Event)
             cx = roundTwo(LEFT - (STRING_SPACING * 2) / 2.5);
           }
 
-          circle
-            .attr("r", roundTwo(STRING_SPACING / 2.5) + "mm")
-            .attr("stroke", circleColor)
-            .attr("fill", circleFillColor)
-            .attr("stroke-width", "0.5mm")
-            .attr("cx", cx + "mm")
-            .attr("cy", roundTwo(STRING_TOP + y * STRING_SPACING) + "mm");
+          circle.setAttribute("r", roundTwo(STRING_SPACING / 2.5) + "mm");
+          circle.setAttribute("stroke", circleColor);
+          circle.setAttribute("fill", circleFillColor);
+          circle.setAttribute("stroke-width", "0.5mm");
+          circle.setAttribute("cx", cx + "mm");
+          circle.setAttribute("cy", roundTwo(STRING_TOP + y * STRING_SPACING) + "mm");
 
           svg.appendChild(circle);
 
           const text = document.createElementNS(NS, "text");
           text.textContent = notes[noteIndex];
 
-          text.attr("text-anchor", "middle")
-            .attr("x", cx + "mm")
-            .attr("y", roundTwo(STRING_TOP + y * STRING_SPACING + 1) + "mm");
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("x", cx + "mm");
+          text.setAttribute("y", roundTwo(STRING_TOP + y * STRING_SPACING + 1) + "mm");
 
           svg.appendChild(text);
         }
