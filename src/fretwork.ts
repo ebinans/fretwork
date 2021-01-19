@@ -343,7 +343,7 @@ function adjustBrightness(color: string, scale: number): string
 interface Painter
 {
   page(pageW: number, pageH: number): void;
-  textMiddle(text: string, x: number, y: number, size?: number): void;
+  textMiddle(text: string, x: number, y: number, size?: number, link?: string): void;
   line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: string): void;
   circle(radius: number, cx: number, cy: number, fill: string, stroke?: string, width?: number): void;
 }
@@ -372,6 +372,8 @@ class PainterSvg implements Painter
     this.svg.setAttribute("font-size", "2.6mm");
     this.svg.setAttribute("font-weight", "bold");
     this.svg.setAttribute("fill", "#333333");
+    this.svg.setAttribute("text-anchor", "middle");
+    this.svg.setAttribute("dominant-baseline", "central");
 
     const background = document.createElementNS("http://www.w3.org/2000/svg", "rect");
 
@@ -382,7 +384,7 @@ class PainterSvg implements Painter
     this.svg.appendChild(background);
   }
 
-  textMiddle(text: string, x: number, y: number, size?: number): void
+  textMiddle(text: string, x: number, y: number, size?: number, link?: string): void
   {
     const textNode = document.createElementNS("http://www.w3.org/2000/svg", "text");
 
@@ -391,15 +393,22 @@ class PainterSvg implements Painter
     textNode.setAttribute("x", x + "mm");
     textNode.setAttribute("y", y + "mm");
 
-    textNode.setAttribute("text-anchor", "middle");
-    textNode.setAttribute("dominant-baseline", "middle");
-
     if (size)
     {
       textNode.setAttribute("font-size", size + "mm");
     }
 
-    this.svg.appendChild(textNode);
+    if (link)
+    {
+      const aNode = document.createElementNS("http://www.w3.org/2000/svg", "a");
+      aNode.setAttribute("href", "https://fretwork.eb.lv/");
+      aNode.appendChild(textNode);
+      this.svg.appendChild(aNode);
+    }
+    else
+    {
+      this.svg.appendChild(textNode);
+    }
   }
 
   line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: string): void
@@ -482,13 +491,13 @@ class PainterPdf implements Painter
     this.pdf.font("DejaVu Sans Bold");
   }
 
-  textMiddle(text: string, x: number, y: number, size?: number): void
+  textMiddle(text: string, x: number, y: number, size?: number, link?: string): void
   {
     this.pdf.fillColor("#333333").fontSize(mmToPt(size ? size : 2.6));
     const textWidth = this.pdf.widthOfString(text);
     const textHeight = this.pdf.heightOfString(text);
 
-    this.pdf.text(text, mmToPt(x) - textWidth / 2, mmToPt(y) - textHeight / 2);
+    this.pdf.text(text, mmToPt(x) - textWidth / 2, mmToPt(y) - textHeight / 2, { link: link });
   }
 
   line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: string): void
@@ -659,7 +668,7 @@ function darwFretboard(painter: Painter)
     PAGE_TOP,
     4);
 
-  painter.textMiddle("fretwork.eb.lv", pageW / 2, pageH - PAGE_BOTTOM, 2.6);
+  painter.textMiddle("fretwork.eb.lv", pageW / 2, pageH - PAGE_BOTTOM, undefined, "https://fretwork.eb.lv");
 
   for (let x = 0; x < paramFrets + 1; ++x)
   {
