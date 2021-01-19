@@ -2,7 +2,9 @@
   "compilerOptions": {
     "module": "commonjs",
     "strict": true,
-    "sourceMap": true,
+    "sourceMap": false,
+    "inlineSourceMap": true,
+    "inlineSources": true,
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {

@@ -22,6 +22,11 @@
 // SOFTWARE.
 //----------------------------------------------------------------------------------------------------------------------
 
+import PDFDocument = require('pdfkit');
+import blobStream = require('blob-stream');
+
+// //----------------------------------------------------------------------------------------------------------------------
+
 // //0    1     2    3    4     5    6     7    8    9     10   11
 // ["A", "A♯", "B", "C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯"];
 
@@ -115,10 +120,9 @@ const INSTRUMENTS: {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class Scale
-{
-  name: string = "";
-  degrees: number[] = [];
+type Scale = {
+  name: string;
+  degrees: number[];
   add?: number[];
   selected?: boolean;
 }
@@ -234,9 +238,14 @@ function uMod(num: number, div: number): number
   return ((num % div) + div) % div;
 }
 
-function roundTwo(num: number): number
+function mmToPtInt(mm: number): number
 {
-  return Math.round(num * 100) / 100;
+  return Math.round(mm * 2.8346456692913);
+}
+
+function mmToPt(mm: number): number
+{
+  return mm * 2.8346456692913;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -331,7 +340,427 @@ function adjustBrightness(color: string, scale: number): string
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function darwFretboard(event: Event)
+interface Painter
+{
+  page(pageW: number, pageH: number): void;
+  textMiddle(text: string, x: number, y: number, size?: number): void;
+  line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: string): void;
+  circle(radius: number, cx: number, cy: number, fill: string, stroke?: string, width?: number): void;
+}
+
+class PainterSvg implements Painter
+{
+  private svg: SVGSVGElement;
+
+  getSvg(): SVGSVGElement
+  {
+    return this.svg;
+  }
+
+  constructor()
+  {
+    const NS = "http://www.w3.org/2000/svg";
+    this.svg = document.createElementNS(NS, "svg");
+  }
+
+  page(pageW: number, pageH: number)
+  {
+    this.svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    this.svg.setAttribute("width", pageW + "mm");
+    this.svg.setAttribute("height", pageH + "mm");
+    this.svg.setAttribute("font-family", "'DejaVu Sans', Verdana, Geneva, Tahoma, sans-serif");
+    this.svg.setAttribute("font-size", "2.6mm");
+    this.svg.setAttribute("font-weight", "bold");
+    this.svg.setAttribute("fill", "#333333");
+
+    const background = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+
+    background.setAttribute("width", "100%");
+    background.setAttribute("height", "100%");
+    background.setAttribute("fill", "white");
+
+    this.svg.appendChild(background);
+  }
+
+  textMiddle(text: string, x: number, y: number, size?: number): void
+  {
+    const textNode = document.createElementNS("http://www.w3.org/2000/svg", "text");
+
+    textNode.textContent = text;
+
+    textNode.setAttribute("x", x + "mm");
+    textNode.setAttribute("y", y + "mm");
+
+    textNode.setAttribute("text-anchor", "middle");
+    textNode.setAttribute("dominant-baseline", "middle");
+
+    if (size)
+    {
+      textNode.setAttribute("font-size", size + "mm");
+    }
+
+    this.svg.appendChild(textNode);
+  }
+
+  line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: string): void
+  {
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+
+    line.setAttribute("x1", x1 + "mm");
+    line.setAttribute("y1", y1 + "mm");
+    line.setAttribute("x2", x2 + "mm");
+    line.setAttribute("y2", y2 + "mm");
+    line.setAttribute("stroke", stroke);
+    line.setAttribute("stroke-width", width + "mm");
+
+    if (linecap)
+    {
+      line.setAttribute("stroke-linecap", linecap);
+    }
+
+    this.svg.appendChild(line);
+  }
+
+  circle(radius: number, cx: number, cy: number, fill: string, stroke?: string, width?: number): void
+  {
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+    circle.setAttribute("r", radius + "mm");
+    circle.setAttribute("cx", cx + "mm");
+    circle.setAttribute("cy", cy + "mm");
+    circle.setAttribute("fill", fill);
+
+    if (stroke)
+    {
+      circle.setAttribute("stroke", stroke);
+    }
+
+    if (width)
+    {
+      circle.setAttribute("stroke-width", width + "mm");
+    }
+
+    this.svg.appendChild(circle);
+  }
+}
+
+class PainterPdf implements Painter
+{
+  private pdf: PDFKit.PDFDocument;
+  private stream: blobStream.IBlobStream;
+
+  savePdf(filename: string)
+  {
+    this.stream.on('finish', () =>
+    {
+      const link = document.createElement("a");
+
+      link.href = this.stream.toBlobURL('application/pdf');;
+      link.download = filename;
+      link.click();
+    });
+
+    this.pdf.end();
+  }
+
+  constructor()
+  {
+    this.pdf = new PDFDocument({ autoFirstPage: false });
+    this.stream = this.pdf.pipe(blobStream());
+  }
+
+  async loadFonts()
+  {
+    await fetch("font/DejaVuSans-Bold.ttf")
+      .then(response => response.arrayBuffer())
+      .then(font => this.pdf.registerFont("DejaVu Sans Bold", font));
+  }
+
+  page(pageW: number, pageH: number)
+  {
+    this.pdf.addPage({ size: [mmToPtInt(pageW), mmToPtInt(pageH)], margin: 0 });
+    this.pdf.font("DejaVu Sans Bold");
+  }
+
+  textMiddle(text: string, x: number, y: number, size?: number): void
+  {
+    this.pdf.fillColor("#333333").fontSize(mmToPt(size ? size : 2.6));
+    const textWidth = this.pdf.widthOfString(text);
+    const textHeight = this.pdf.heightOfString(text);
+
+    this.pdf.text(text, mmToPt(x) - textWidth / 2, mmToPt(y) - textHeight / 2);
+  }
+
+  line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: string): void
+  {
+    if (linecap)
+    {
+      this.pdf
+        .lineCap(linecap)
+        .moveTo(mmToPt(x1), mmToPt(y1))
+        .lineTo(mmToPt(x2), mmToPt(y2))
+        .lineWidth(mmToPt(width))
+        .stroke(stroke);
+    }
+    else
+    {
+      this.pdf
+        .moveTo(mmToPt(x1), mmToPt(y1))
+        .lineTo(mmToPt(x2), mmToPt(y2))
+        .lineWidth(mmToPt(width))
+        .stroke(stroke);
+    }
+  }
+
+  circle(radius: number, cx: number, cy: number, fill: string, stroke?: string, width?: number): void
+  {
+    if (stroke && width)
+    {
+      this.pdf
+        .circle(mmToPt(cx), mmToPt(cy), mmToPt(radius))
+        .lineWidth(mmToPt(width))
+        .fillAndStroke(fill, stroke);
+    }
+    else
+    {
+      this.pdf
+        .circle(mmToPt(cx), mmToPt(cy), mmToPt(radius))
+        .fill(fill);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function darwFretboard(painter: Painter)
+{
+  const domPage = document.getElementById("page") as HTMLInputElement;
+  const domFrets = document.getElementById("frets") as HTMLInputElement;
+  const domInstrument = document.getElementById("instrument") as HTMLInputElement;
+  const domKey = document.getElementById("key") as HTMLInputElement;
+  const domScale = document.getElementById("scale") as HTMLInputElement;
+  const domAccidental = document.getElementById("accidental") as HTMLInputElement;
+  const domInstrumentName = document.getElementById("name") as HTMLSpanElement;
+  const domFlat = document.getElementById("flat") as HTMLOptionElement;
+  const domSharp = document.getElementById("sharp") as HTMLOptionElement;
+
+  const paramInstrument = JSON.parse(domInstrument.value) as [number, number];
+  const instrument = INSTRUMENTS[paramInstrument[0]];
+  const tuning = INSTRUMENTS[paramInstrument[0]].tuning[paramInstrument[1]];
+
+  domInstrumentName.innerText = instrument.name;
+
+  const BASE_NOTES: [string, number][] = [
+    ["A", 0],
+    ["B", 2],
+    ["C", 3],
+    ["D", 5],
+    ["E", 7],
+    ["F", 8],
+    ["G", 10],
+  ];
+
+  const paramKey = parseInt(domKey.value);
+  const paramScale = JSON.parse(domScale.value) as [number, number];
+
+  const scale = SCALES[paramScale[0]].scales[paramScale[1]];
+
+  if (scale.degrees.length == 7)
+  {
+    let bn = getBaseNotes(BASE_NOTES, paramKey, -1, scale);
+
+    if (bn[0] && domFlat.selected)
+    {
+      domAccidental.value = "0";
+    }
+
+    domFlat.disabled = bn[0];
+
+    bn = getBaseNotes(BASE_NOTES, paramKey, 1, scale);
+
+    if (bn[0] && domSharp.selected)
+    {
+      domAccidental.value = "0";
+    }
+
+    domSharp.disabled = bn[0];
+  }
+  else
+  {
+    domFlat.disabled = false;
+    domSharp.disabled = false;
+  }
+
+  const paramPageIndex = parseInt(domPage.value);
+  const paramFrets = parseInt(domFrets.value);
+  const paramAccidental = parseInt(domAccidental.value);
+
+  const PAGE_SIZES = [
+    [297, 210],
+    [210, 297],
+    [279.4, 215.9],
+    [215.9, 279.4],
+  ];
+
+  const pageW = PAGE_SIZES[paramPageIndex][0];
+  const pageH = PAGE_SIZES[paramPageIndex][1];
+
+  const degrees = scale.degrees.map((x) => (x < 0 ? -1 : uMod(x + paramKey + paramAccidental, 12)));
+  let degreesAdd = scale.add;
+
+  if (degreesAdd)
+  {
+    degreesAdd = degreesAdd.map((x) => (x < 0 ? -1 : uMod(x + paramKey + paramAccidental, 12)));
+  }
+
+  //---
+
+  const PAGE_TOP = 15;
+  const PAGE_BOTTOM = 15;
+
+  const LEFT = 20;
+  const RIGHT = 20;
+
+  const STRING_TOP = 25;
+  const STRING_SPACING = 6;
+  const fretSpacing = (pageW - LEFT - RIGHT) / paramFrets;
+
+  //---
+
+  painter.page(pageW, pageH);
+
+  let notes: string[];
+  let hasDouble = false;
+
+  if (scale.degrees.length == 7)
+  {
+    let flats = 0;
+
+    [hasDouble, flats, , notes] = getBaseNotes(BASE_NOTES, paramKey, paramAccidental, scale);
+
+    for (let i = 0; i < CHROMATIC_NOTES[flats ? 1 : 0].length; ++i)
+    {
+      if (notes[i] == undefined)
+      {
+        notes[i] = CHROMATIC_NOTES[flats ? 1 : 0][i];
+      }
+    }
+  }
+  else
+  {
+    notes = CHROMATIC_NOTES[paramAccidental >= 0 ? 0 : 1];
+  }
+
+  const acc = paramAccidental == -1 ? "♭ " : paramAccidental == 1 ? "♯ " : " ";
+
+  painter.textMiddle(
+    `${instrument.name}: ${tuning.name} tuning, ${CHROMATIC_NOTES[0][paramKey]}${acc}${scale.name} scale`,
+    pageW / 2,
+    PAGE_TOP,
+    4);
+
+  painter.textMiddle("fretwork.eb.lv", pageW / 2, pageH - PAGE_BOTTOM, 2.6);
+
+  for (let x = 0; x < paramFrets + 1; ++x)
+  {
+    painter.line(
+      LEFT + fretSpacing * x,
+      STRING_TOP,
+      LEFT + fretSpacing * x,
+      STRING_TOP + (instrument.strings - 1) * STRING_SPACING,
+      x == 0 ? "#333333" : "#CCCCCC",
+      1,
+      "round");
+  }
+
+  for (let y = 0; y < instrument.strings; ++y)
+  {
+    painter.line(
+      LEFT,
+      STRING_TOP + y * STRING_SPACING,
+      pageW - RIGHT,
+      STRING_TOP + y * STRING_SPACING,
+      "black",
+      0.2);
+  }
+
+  if (instrument.dots)
+  {
+    for (let x = 0; x < Math.min(instrument.dots.length, paramFrets + 1); ++x)
+    {
+      for (let i = 0; i < instrument.dots[x]; ++i)
+      {
+        painter.circle(
+          STRING_SPACING / 6,
+          LEFT + x * fretSpacing - fretSpacing / 2,
+          STRING_TOP + instrument.strings * STRING_SPACING + i * (STRING_SPACING / 3 + 0.5),
+          "grey");
+      }
+    }
+  }
+
+  // https://personal.sron.nl/~pault/#fig:scheme_light
+  const COLORS = ["#eedd88", "#ee8866", "#99ddff", "#bbcc33", "#ffaabb", "#44bb99", "#dddddd"];
+
+  for (let y = instrument.strings - 1; y > -1; --y)
+  {
+    for (let x = 0; x < paramFrets + 1; ++x)
+    {
+      const noteIndex = uMod((tuning.tuning[instrument.strings - y - 1] + x), notes.length);
+
+      const colorIndex =
+        Math.trunc((12 + tuning.tuning[instrument.strings - y - 1] + x - degrees[0]) / notes.length);
+
+      if (degrees.includes(noteIndex) || degreesAdd?.includes(noteIndex))
+      {
+        const circleColor = adjustBrightness(COLORS[colorIndex], 0.8);
+        let circleFillColor = COLORS[colorIndex];
+
+        if (noteIndex == degrees[0])
+        {
+          circleFillColor = "white";
+        }
+
+        let cx = LEFT + x * fretSpacing - fretSpacing / 2;
+
+        if (x == 0)
+        {
+          cx = LEFT - (STRING_SPACING * 2) / 2.5;
+        }
+
+        painter.circle(
+          STRING_SPACING / 2.5,
+          cx,
+          STRING_TOP + y * STRING_SPACING,
+          circleFillColor,
+          circleColor,
+          0.5);
+
+        painter.textMiddle(
+          notes[noteIndex],
+          cx,
+          STRING_TOP + y * STRING_SPACING);
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function darwFretboardPdf(event: Event)
+{
+  const pdf = new PainterPdf();
+
+  pdf.loadFonts().then(() =>
+  {
+    darwFretboard(pdf);
+    pdf.savePdf("scale.pdf");
+  });
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function darwFretboardSvg(event: Event)
 {
   const fb = document.getElementById("fretboard") as unknown as SVGGElement;
 
@@ -342,19 +771,12 @@ function darwFretboard(event: Event)
       fb.firstChild.remove();
     }
 
-    const domPage = document.getElementById("page") as HTMLInputElement;
     const domFrets = document.getElementById("frets") as HTMLInputElement;
     const domInstrument = document.getElementById("instrument") as HTMLInputElement;
-    const domKey = document.getElementById("key") as HTMLInputElement;
-    const domScale = document.getElementById("scale") as HTMLInputElement;
-    const domAccidental = document.getElementById("accidental") as HTMLInputElement;
     const domInstrumentName = document.getElementById("name") as HTMLSpanElement;
-    const domFlat = document.getElementById("flat") as HTMLOptionElement;
-    const domSharp = document.getElementById("sharp") as HTMLOptionElement;
 
     const paramInstrument = JSON.parse(domInstrument.value) as [number, number];
     const instrument = INSTRUMENTS[paramInstrument[0]];
-    const tuning = INSTRUMENTS[paramInstrument[0]].tuning[paramInstrument[1]];
 
     domInstrumentName.innerText = instrument.name;
 
@@ -363,241 +785,11 @@ function darwFretboard(event: Event)
       domFrets.value = instrument.frets.toString();
     }
 
-    const BASE_NOTES: [string, number][] = [
-      ["A", 0],
-      ["B", 2],
-      ["C", 3],
-      ["D", 5],
-      ["E", 7],
-      ["F", 8],
-      ["G", 10],
-    ];
+    const painter = new PainterSvg();
 
-    const paramKey = parseInt(domKey.value);
-    const paramScale = JSON.parse(domScale.value) as [number, number];
+    darwFretboard(painter);
 
-    const scale = SCALES[paramScale[0]].scales[paramScale[1]];
-
-    if (scale.degrees.length == 7)
-    {
-      let bn = getBaseNotes(BASE_NOTES, paramKey, -1, scale);
-
-      if (bn[0] && domFlat.selected)
-      {
-        domAccidental.value = "0";
-      }
-
-      domFlat.disabled = bn[0];
-
-      bn = getBaseNotes(BASE_NOTES, paramKey, 1, scale);
-
-      if (bn[0] && domSharp.selected)
-      {
-        domAccidental.value = "0";
-      }
-
-      domSharp.disabled = bn[0];
-    }
-    else
-    {
-      domFlat.disabled = false;
-      domSharp.disabled = false;
-    }
-
-    const paramPageIndex = parseInt(domPage.value);
-    const paramFrets = parseInt(domFrets.value);
-    const paramAccidental = parseInt(domAccidental.value);
-
-    const PAGE_SIZES = [
-      [297, 210],
-      [210, 297],
-      [279.4, 215.9],
-      [215.9, 279.4],
-    ];
-
-    const pageW = PAGE_SIZES[paramPageIndex][0];
-    const pageH = PAGE_SIZES[paramPageIndex][1];
-
-    const degrees = scale.degrees.map((x) => (x < 0 ? -1 : uMod(x + paramKey + paramAccidental, 12)));
-    let degreesAdd = scale.add;
-
-    if (degreesAdd)
-    {
-      degreesAdd = degreesAdd.map((x) => (x < 0 ? -1 : uMod(x + paramKey + paramAccidental, 12)));
-    }
-
-    //---
-
-    const PAGE_TOP = 15;
-
-    const LEFT = 20;
-    const RIGHT = 20;
-
-    const STRING_TOP = 25;
-    const STRING_SPACING = 6;
-    const fretSpacing = (pageW - LEFT - RIGHT) / paramFrets;
-
-    //---
-
-    const NS = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(NS, "svg");
-
-    svg.setAttribute("xmlns", NS);
-    svg.setAttribute("width", pageW + "mm");
-    svg.setAttribute("height", pageH + "mm");
-    svg.setAttribute("font-family", "'DejaVu Sans', Verdana, Geneva, Tahoma, sans-serif");
-    svg.setAttribute("font-size", "2.6mm");
-    svg.setAttribute("font-weight", "bold");
-    svg.setAttribute("fill", "#333333");
-
-    const background = document.createElementNS(NS, "rect");
-
-    background.setAttribute("width", "100%");
-    background.setAttribute("height", "100%");
-    background.setAttribute("fill", "white");
-
-    svg.appendChild(background);
-
-    let notes: string[];
-    let hasDouble = false;
-
-    if (scale.degrees.length == 7)
-    {
-      let flats = 0;
-
-      [hasDouble, flats, , notes] = getBaseNotes(BASE_NOTES, paramKey, paramAccidental, scale);
-
-      for (let i = 0; i < CHROMATIC_NOTES[flats ? 1 : 0].length; ++i)
-      {
-        if (notes[i] == undefined)
-        {
-          notes[i] = CHROMATIC_NOTES[flats ? 1 : 0][i];
-        }
-      }
-    }
-    else
-    {
-      notes = CHROMATIC_NOTES[paramAccidental >= 0 ? 0 : 1];
-    }
-
-    const title = document.createElementNS(NS, "text");
-
-    const acc = paramAccidental == -1 ? "♭ " : paramAccidental == 1 ? "♯ " : " ";
-
-    title.textContent =
-      `${instrument.name}: ${tuning.name} tuning, ${CHROMATIC_NOTES[0][paramKey]}${acc}${scale.name} scale`;
-
-
-    title.setAttribute("x", pageW / 2 + "mm");
-    title.setAttribute("y", PAGE_TOP + "mm");
-    title.setAttribute("text-anchor", "middle");
-    title.setAttribute("font-size", "4mm");
-
-    svg.appendChild(title);
-
-    for (let x = 0; x < paramFrets + 1; ++x)
-    {
-      const line = document.createElementNS(NS, "line");
-
-      line.setAttribute("x1", roundTwo(LEFT + fretSpacing * x) + "mm");
-      line.setAttribute("y1", roundTwo(STRING_TOP) + "mm");
-      line.setAttribute("x2", roundTwo(LEFT + fretSpacing * x) + "mm");
-      line.setAttribute("y2", roundTwo(STRING_TOP + (instrument.strings - 1) * STRING_SPACING) + "mm");
-      line.setAttribute("stroke", x == 0 ? "#333333" : "#CCCCCC");
-      line.setAttribute("stroke-width", "1mm");
-      line.setAttribute("stroke-linecap", "round");
-
-      svg.appendChild(line);
-    }
-
-    for (let y = 0; y < instrument.strings; ++y)
-    {
-      const line = document.createElementNS(NS, "line");
-
-      line.setAttribute("x1", roundTwo(LEFT) + "mm");
-      line.setAttribute("y1", roundTwo(STRING_TOP + y * STRING_SPACING) + "mm");
-      line.setAttribute("x2", roundTwo(pageW - RIGHT) + "mm");
-      line.setAttribute("y2", roundTwo(STRING_TOP + y * STRING_SPACING) + "mm");
-      line.setAttribute("stroke", "black");
-      line.setAttribute("stroke-width", "0.2mm");
-
-      svg.appendChild(line);
-    }
-
-    if (instrument.dots)
-    {
-      for (let x = 0; x < Math.min(instrument.dots.length, paramFrets + 1); ++x)
-      {
-        for (let i = 0; i < instrument.dots[x]; ++i)
-        {
-          const circle = document.createElementNS(NS, "circle");
-
-          circle.setAttribute("r", roundTwo(STRING_SPACING / 6) + "mm");
-          circle.setAttribute("fill", "grey");
-          circle.setAttribute("cx", roundTwo(LEFT + x * fretSpacing - fretSpacing / 2) + "mm");
-          circle.setAttribute(
-            "cy",
-            roundTwo(STRING_TOP + instrument.strings * STRING_SPACING + i * (STRING_SPACING / 3 + 0.5)) + "mm"
-          );
-
-          svg.appendChild(circle);
-        }
-      }
-    }
-
-    // https://personal.sron.nl/~pault/#fig:scheme_light
-    const COLORS = ["#eedd88", "#ee8866", "#99ddff", "#bbcc33", "#ffaabb", "#44bb99", "#dddddd"];
-
-    for (let y = instrument.strings - 1; y > -1; --y)
-    {
-      for (let x = 0; x < paramFrets + 1; ++x)
-      {
-        const noteIndex = uMod((tuning.tuning[instrument.strings - y - 1] + x), notes.length);
-
-        const colorIndex =
-          Math.trunc((12 + tuning.tuning[instrument.strings - y - 1] + x - degrees[0]) / notes.length);
-
-        if (degrees.includes(noteIndex) || degreesAdd?.includes(noteIndex))
-        {
-          const circle = document.createElementNS(NS, "circle");
-
-          const circleColor = adjustBrightness(COLORS[colorIndex], 0.8);
-          let circleFillColor = COLORS[colorIndex];
-
-          if (noteIndex == degrees[0])
-          {
-            circleFillColor = "white";
-          }
-
-          let cx = roundTwo(LEFT + x * fretSpacing - fretSpacing / 2);
-
-          if (x == 0)
-          {
-            cx = roundTwo(LEFT - (STRING_SPACING * 2) / 2.5);
-          }
-
-          circle.setAttribute("r", roundTwo(STRING_SPACING / 2.5) + "mm");
-          circle.setAttribute("stroke", circleColor);
-          circle.setAttribute("fill", circleFillColor);
-          circle.setAttribute("stroke-width", "0.5mm");
-          circle.setAttribute("cx", cx + "mm");
-          circle.setAttribute("cy", roundTwo(STRING_TOP + y * STRING_SPACING) + "mm");
-
-          svg.appendChild(circle);
-
-          const text = document.createElementNS(NS, "text");
-          text.textContent = notes[noteIndex];
-
-          text.setAttribute("text-anchor", "middle");
-          text.setAttribute("x", cx + "mm");
-          text.setAttribute("y", roundTwo(STRING_TOP + y * STRING_SPACING + 1) + "mm");
-
-          svg.appendChild(text);
-        }
-      }
-    }
-
-    fb.appendChild(svg);
+    fb.appendChild(painter.getSvg());
 
     resizeFretboard(event);
   }
@@ -681,16 +873,9 @@ function saveAs(uri: string, filename: string)
 
 //----------------------------------------------------------------------------------------------------------------------
 
-interface Window
-{
-  openGh(): void;
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-
 window.addEventListener("DOMContentLoaded", () =>
 {
-  window.addEventListener("load", darwFretboard);
+  window.addEventListener("load", darwFretboardSvg);
 
   window.addEventListener("resize", resizeFretboard);
   window.addEventListener("beforeprint", resizeFretboard);
@@ -761,11 +946,11 @@ window.addEventListener("DOMContentLoaded", () =>
 
   toUpdate.forEach((element) =>
   {
-    document.getElementById(element)?.addEventListener("change", darwFretboard);
+    document.getElementById(element)?.addEventListener("change", darwFretboardSvg);
   });
 
-  const domSave = document.getElementById("save");
-  domSave?.addEventListener("click", () =>
+  const domSaveSvg = document.getElementById("save_svg");
+  domSaveSvg?.addEventListener("click", () =>
   {
     const svg = document.getElementById("fretboard") as unknown as SVGGElement;
 
@@ -778,20 +963,8 @@ window.addEventListener("DOMContentLoaded", () =>
     }
   });
 
-  const domLink = document.getElementById("link") as HTMLAnchorElement;
-  domLink?.addEventListener("click", () =>
-  {
-    const userAgent = navigator.userAgent.toLowerCase();
-
-    if (userAgent.indexOf(' electron/') > -1)
-    {
-      window.openGh();
-    }
-    else
-    {
-      window.location.assign("https://github.com/ebinans/fretwork");
-    }
-  });
+  const domSavePdf = document.getElementById("save_pdf");
+  domSavePdf?.addEventListener("click", darwFretboardPdf);
 });
 
 //----------------------------------------------------------------------------------------------------------------------

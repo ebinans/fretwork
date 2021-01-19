@@ -6,48 +6,27 @@
 			"type": "firefox",
 			"request": "launch",
 			"file": "${workspaceFolder}/dist/index.html",
-			"preLaunchTask": "tsc: build - tsconfig.json"
+			"preLaunchTask": "npm: dev",
+			"pathMappings": [
+				{
+					"url": "file:///C:/Source/src",
+					"path": "${workspaceFolder}/src"
+				}
+			]
 		},
 		{
 			"name": "Edge",
 			"type": "pwa-msedge",
 			"request": "launch",
 			"file": "${workspaceFolder}/dist/index.html",
-			"preLaunchTask": "tsc: build - tsconfig.json"
+			"preLaunchTask": "npm: dev"
 		},
 		{
 			"name": "Chrome",
 			"type": "pwa-chrome",
 			"request": "launch",
 			"file": "${workspaceFolder}/dist/index.html",
-			"preLaunchTask": "tsc: build - tsconfig.json"
-		},
-		{
-			"type": "pwa-node",
-			"request": "launch",
-			"name": "Electron: Main",
-			"runtimeExecutable": "npm",
-			"runtimeArgs": [
-				"run",
-				"dev"
-			]
-		},
-		{
-			"name": "Electron: Renderer",
-			"type": "chrome",
-			"request": "attach",
-			"port": 9223,
-			"webRoot": "${workspaceRoot}",
-			"timeout": 30000
+			"preLaunchTask": "npm: dev"
 		}
 	],
-	"compounds": [
-		{
-			"name": "Electron: All",
-			"configurations": [
-				"Electron: Main",
-				"Electron: Renderer"
-			]
-		}
-	]
 }
