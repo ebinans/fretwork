@@ -77,28 +77,25 @@ tr {
 	white-space: nowrap;
 }
 
-#carcass {
+.carcass {
 	table-layout: fixed;
 	height: 100%;
 	width: 100%;
 	border-spacing: 5px;
 }
 
-#carcass tr {
+.carcass tr {
 	height: 1px;
 }
 
-#carcass tr:last-child {
+.carcass tr:last-child {
 	height: 100%;
 	vertical-align: top;
 }
 
-#link {
-	float: right;
-}
-
 .settings {
 	border-spacing: 0px;
+	background-color: white;
 }
 
 .settings td {
@@ -106,13 +103,14 @@ tr {
 }
 
 .options {
-	background-color: #fafafa;
 	width: 100%;
 }
 
-#label {
-	background-color: white;
-	padding: 1px 5px 1px 5px;
+.workspace {
+	background-color: #aaaaaa;
+	padding: 5px;
+
+	background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23999999' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 @media print {

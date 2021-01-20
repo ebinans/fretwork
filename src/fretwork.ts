@@ -340,15 +340,20 @@ function adjustBrightness(color: string, scale: number): string
 
 //----------------------------------------------------------------------------------------------------------------------
 
-interface Painter
+type LineCap = "butt" | "round" | "square";
+
+abstract class Painter
 {
-  page(pageW: number, pageH: number): void;
-  textMiddle(text: string, x: number, y: number, size?: number, link?: string): void;
-  line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: string): void;
-  circle(radius: number, cx: number, cy: number, fill: string, stroke?: string, width?: number): void;
+  readonly DEFAULT_FONT_SIZE = 2.6;
+  readonly DEFAULT_FONT_COLOR = "#333333";
+
+  abstract page(pageW: number, pageH: number): void;
+  abstract textMiddle(text: string, x: number, y: number, size?: number, link?: string): void;
+  abstract line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: LineCap): void;
+  abstract circle(radius: number, cx: number, cy: number, fill: string, stroke?: string, width?: number): void;
 }
 
-class PainterSvg implements Painter
+class PainterSvg extends Painter
 {
   private svg: SVGSVGElement;
 
@@ -359,6 +364,8 @@ class PainterSvg implements Painter
 
   constructor()
   {
+    super();
+
     const NS = "http://www.w3.org/2000/svg";
     this.svg = document.createElementNS(NS, "svg");
   }
@@ -369,9 +376,9 @@ class PainterSvg implements Painter
     this.svg.setAttribute("width", pageW + "mm");
     this.svg.setAttribute("height", pageH + "mm");
     this.svg.setAttribute("font-family", "'DejaVu Sans', Verdana, Geneva, Tahoma, sans-serif");
-    this.svg.setAttribute("font-size", "2.6mm");
+    this.svg.setAttribute("font-size", this.DEFAULT_FONT_SIZE + "mm");
     this.svg.setAttribute("font-weight", "bold");
-    this.svg.setAttribute("fill", "#333333");
+    this.svg.setAttribute("fill", this.DEFAULT_FONT_COLOR);
     this.svg.setAttribute("text-anchor", "middle");
     this.svg.setAttribute("dominant-baseline", "central");
 
@@ -411,7 +418,7 @@ class PainterSvg implements Painter
     }
   }
 
-  line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: string): void
+  line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: LineCap): void
   {
     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 
@@ -453,7 +460,9 @@ class PainterSvg implements Painter
   }
 }
 
-class PainterPdf implements Painter
+//----------------------------------------------------------------------------------------------------------------------
+
+class PainterPdf extends Painter
 {
   private pdf: PDFKit.PDFDocument;
   private stream: blobStream.IBlobStream;
@@ -474,6 +483,8 @@ class PainterPdf implements Painter
 
   constructor()
   {
+    super();
+
     this.pdf = new PDFDocument({ autoFirstPage: false });
     this.stream = this.pdf.pipe(blobStream());
   }
@@ -493,14 +504,14 @@ class PainterPdf implements Painter
 
   textMiddle(text: string, x: number, y: number, size?: number, link?: string): void
   {
-    this.pdf.fillColor("#333333").fontSize(mmToPt(size ? size : 2.6));
+    this.pdf.fillColor(this.DEFAULT_FONT_COLOR).fontSize(mmToPt(size ? size : this.DEFAULT_FONT_SIZE));
     const textWidth = this.pdf.widthOfString(text);
     const textHeight = this.pdf.heightOfString(text);
 
     this.pdf.text(text, mmToPt(x) - textWidth / 2, mmToPt(y) - textHeight / 2, { link: link });
   }
 
-  line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: string): void
+  line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: LineCap): void
   {
     if (linecap)
     {
