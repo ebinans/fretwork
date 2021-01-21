@@ -525,19 +525,6 @@ function darwFretboard(painter: Painter)
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function darwFretboardPdf(event: Event)
-{
-	const pdf = new PainterPdf();
-
-	pdf.loadFonts().then(() =>
-	{
-		darwFretboard(pdf);
-		pdf.savePdf("scale.pdf");
-	});
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-
 function darwFretboardSvg(event: Event)
 {
 	const fb = document.getElementById("fretboard") as unknown as SVGGElement;
@@ -731,7 +718,16 @@ window.addEventListener("DOMContentLoaded", () =>
 	});
 
 	const domSavePdf = document.getElementById("save_pdf");
-	domSavePdf?.addEventListener("click", darwFretboardPdf);
+	domSavePdf?.addEventListener("click", () =>
+	{
+		const pdf = new PainterPdf();
+
+		pdf.loadFonts().then(() =>
+		{
+			darwFretboard(pdf);
+			pdf.savePdf("scale.pdf");
+		});
+	});
 });
 
 //----------------------------------------------------------------------------------------------------------------------
