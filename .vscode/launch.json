@@ -1,0 +1,32 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Firefox",
+			"type": "firefox",
+			"request": "launch",
+			"file": "${workspaceFolder}/dist/index.html",
+			"preLaunchTask": "npm: dev",
+			"pathMappings": [
+				{
+					"url": "file:///C:/Source/src",
+					"path": "${workspaceFolder}/src"
+				}
+			]
+		},
+		{
+			"name": "Edge",
+			"type": "pwa-msedge",
+			"request": "launch",
+			"file": "${workspaceFolder}/dist/index.html",
+			"preLaunchTask": "npm: dev"
+		},
+		{
+			"name": "Chrome",
+			"type": "pwa-chrome",
+			"request": "launch",
+			"file": "${workspaceFolder}/dist/index.html",
+			"preLaunchTask": "npm: dev"
+		}
+	],
+}

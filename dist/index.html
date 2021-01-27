@@ -1,0 +1,110 @@
+﻿<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+	<!--
+	MIT License
+
+	Copyright (c) 2021 Edgars Bināns
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+	-->
+	<head>
+		<title>Fretwork</title>
+		<meta charset="utf-8" />
+		<meta name="google" content="notranslate" />
+		<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+		<link rel="stylesheet" href="index.css" />
+		<script src="bundle.js"></script>
+		<style type="text/css"></style>
+	</head>
+	<body>
+		<table class="carcass">
+			<tr class="noprint">
+				<td>
+					<table class="settings">
+						<col />
+						<col />
+						<col class="options" />
+						<tr>
+							<td rowspan="3">
+								<img src="favicon.svg" height="32px" width="32px" />
+							</td>
+						</tr>
+						<tr>
+							<td>Instrument:</td>
+							<td>
+								<span id="name"></span>
+								<select id="instrument"></select>
+								<span>Frets:</span>
+								<input type="number" id="frets" min="12" max="27" value="22" />
+								<span>Capo:</span>
+								<input type="number" id="capo" min="0" max="12" value="0" />
+							</td>
+							<td>
+								<a href="https://github.com/ebinans/fretwork" target="_blank">
+									<img
+										src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgICAgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogICAgICB3aWR0aD0iNDgiCiAgICAgIGhlaWdodD0iNDgiCiAgICAgIHZpZXdCb3g9IjAgMCAxMi43IDEyLjciCiAgICAgIHZlcnNpb249IjEuMSI+CiAgIDxnIHRyYW5zZm9ybT0ibWF0cml4KDAuMzg5ODIxNjYsMCwwLC0wLjM4OTgyMTY2LDYuMzQ5NDE1MywwLjE4NTIwODMzKSI+CiAgICAgIDxwYXRoCiAgICAgICAgICAgIGQ9Im0gMCwwIGMgLTguOTk1LDAgLTE2LjI4OCwtNy4yOTMgLTE2LjI4OCwtMTYuMjkgMCwtNy4xOTcgNC42NjcsLTEzLjMwMiAxMS4xNCwtMTUuNDU3IDAuODE1LC0wLjE0OSAxLjExMiwwLjM1NCAxLjExMiwwLjc4NiAwLDAuMzg2IC0wLjAxNCwxLjQxMSAtMC4wMjIsMi43NyAtNC41MzEsLTAuOTg0IC01LjQ4NywyLjE4NCAtNS40ODcsMi4xODQgLTAuNzQxLDEuODgxIC0xLjgwOSwyLjM4MiAtMS44MDksMi4zODIgLTEuNDc5LDEuMDExIDAuMTEyLDAuOTkxIDAuMTEyLDAuOTkxIDEuNjM1LC0wLjExNiAyLjQ5NSwtMS42NzkgMi40OTUsLTEuNjc5IDEuNDUzLC0yLjQ4OSAzLjgxMywtMS43NyA0Ljc0MSwtMS4zNTQgMC4xNDgsMS4wNTMgMC41NjgsMS43NzEgMS4wMzQsMi4xNzggLTMuNjE3LDAuNDExIC03LjQyLDEuODA5IC03LjQyLDguMDUxIDAsMS43NzggMC42MzUsMy4yMzIgMS42NzcsNC4zNzEgLTAuMTY4LDAuNDEyIC0wLjcyNywyLjA2OCAwLjE1OSw0LjMxMSAwLDAgMS4zNjgsMC40MzggNC40OCwtMS42NyAxLjI5OSwwLjM2MSAyLjY5MywwLjU0MiA0LjA3OCwwLjU0OCAxLjM4MywtMC4wMDYgMi43NzcsLTAuMTg3IDQuMDc4LC0wLjU0OCAzLjExLDIuMTA4IDQuNDc1LDEuNjcgNC40NzUsMS42NyAwLjg4OSwtMi4yNDMgMC4zMywtMy44OTkgMC4xNjIsLTQuMzExIDEuMDQ0LC0xLjEzOSAxLjY3NSwtMi41OTMgMS42NzUsLTQuMzcxIDAsLTYuMjU4IC0zLjgwOSwtNy42MzUgLTcuNDM4LC04LjAzOCAwLjU4NSwtMC41MDMgMS4xMDYsLTEuNDk3IDEuMTA2LC0zLjAxNyAwLC0yLjE3NyAtMC4wMiwtMy45MzQgLTAuMDIsLTQuNDY4IDAsLTAuNDM2IDAuMjkzLC0wLjk0MyAxLjEyLC0wLjc4NCA2LjQ2OCwyLjE1OSAxMS4xMzEsOC4yNiAxMS4xMzEsMTUuNDU1IEMgMTYuMjkxLC03LjI5MyA4Ljk5NywwIDAsMCIKICAgICAgICAgICAgc3R5bGU9ImZpbGw6IzFiMTgxNztmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6ZXZlbm9kZDtzdHJva2U6bm9uZSIgLz4KICAgPC9nPgo8L3N2Zz4K"
+										height="16px"
+										width="16px"
+									/>
+								</a>
+							</td>
+						</tr>
+						<tr>
+							<td>Scale, mode:</td>
+							<td>
+								<select id="key">
+									<option value="0">A</option>
+									<option value="2">B</option>
+									<option value="3">C</option>
+									<option value="5">D</option>
+									<option value="7">E</option>
+									<option value="8">F</option>
+									<option value="10">G</option>
+								</select>
+								<select id="accidental">
+									<option value="-1" id="flat">♭&#xFE0E;</option>
+									<option value="0" selected="1">♮&#xFE0E;</option>
+									<option value="1" id="sharp">♯&#xFE0E;</option>
+								</select>
+								<select id="scale"></select>
+							</td>
+							<td>
+								<select id="page">
+									<option value="0">A4 Landscape</option>
+									<option value="1">A4 Portrait</option>
+									<option value="2">Letter Landscape</option>
+									<option value="3">Letter Portrait</option>
+								</select>
+								<button id="save_svg">Save SVG</button>
+								<button id="save_pdf">Save PDF</button>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td class="workspace">
+					<svg width="100%" height="100%">
+						<g id="fretboard"></g>
+					</svg>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>
