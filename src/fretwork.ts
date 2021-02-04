@@ -6,18 +6,37 @@
  */
 //----------------------------------------------------------------------------------------------------------------------
 
-import { PainterSvg } from './PainterSvg';
-import { PainterPdf } from './PainterPdf';
-import { Painter } from './Painter';
-import { Utils } from './Utils';
-import { Scale, INSTRUMENTS, SCALES } from './definitions';
+import { PainterSvg } from "./PainterSvg";
+import { PainterPdf } from "./PainterPdf";
+import { Painter } from "./Painter";
+import { Utils } from "./Utils";
+import { Scale, INSTRUMENTS, SCALES } from "./definitions";
 
 //----------------------------------------------------------------------------------------------------------------------
 
 function e<T>(id: string): T
 {
-	return document.getElementById(id) as unknown as T;
+	const element = document.getElementById(id);
+
+	if (!element)
+	{
+		throw new Error(`Element '${id}' not found`);
+	}
+
+	return (element as unknown) as T;
 }
+
+//----------------------------------------------------------------------------------------------------------------------
+
+type Params = {
+	page: number;
+	frets: number;
+	instrument: [number, number];
+	key: number;
+	scale: [number, number];
+	capo: number;
+	accidental: number;
+};
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -56,8 +75,17 @@ class Fretboard
 	private static readonly STRING_SPACING = 6;
 
 	// https://personal.sron.nl/~pault/#fig:scheme_light
-	private static COLORS: readonly string[] =
-		["#77aadd", "#eedd88", "#ee8866", "#99ddff", "#bbcc33", "#ffaabb", "#44bb99", "#dddddd", "aaaa00"] as const;
+	private static COLORS: readonly string[] = [
+		"#77aadd",
+		"#eedd88",
+		"#ee8866",
+		"#99ddff",
+		"#bbcc33",
+		"#ffaabb",
+		"#44bb99",
+		"#dddddd",
+		"aaaa00",
+	] as const;
 
 	fileTitle = "";
 
@@ -66,73 +94,54 @@ class Fretboard
 
 	private readonly freatboard: SVGGElement = e("fretboard");
 
-	private readonly domPage: HTMLInputElement = e("page");
-	private readonly domFrets: HTMLInputElement = e("frets");
-	private readonly domInstrument: HTMLInputElement = e("instrument");
-	private readonly domAccidental: HTMLInputElement = e("accidental");
-	private readonly domInstrumentName: HTMLSpanElement = e("name");
-	private readonly domFlat: HTMLOptionElement = e("flat");
-	private readonly domSharp: HTMLOptionElement = e("sharp");
-	private readonly domCapo: HTMLInputElement = e("capo");
+	private readonly dom = {
+		page: e<HTMLInputElement>("page"),
+		frets: e<HTMLInputElement>("frets"),
+		instrument: e<HTMLInputElement>("instrument"),
+		key: e<HTMLInputElement>("key"),
+		scale: e<HTMLInputElement>("scale"),
+		accidental: e<HTMLInputElement>("accidental"),
+		instrumentName: e<HTMLSpanElement>("name"),
+		flat: e<HTMLOptionElement>("flat"),
+		sharp: e<HTMLOptionElement>("sharp"),
+		capo: e<HTMLInputElement>("capo")
+	};
+
+	private getUiParams(): Params
+	{
+		return {
+			page: parseInt(this.dom.page.value),
+			frets: Math.max(parseInt(this.dom.frets.value) - parseInt(this.dom.capo.value), 1),
+			instrument: JSON.parse(this.dom.instrument.value) as [number, number],
+			key: parseInt(this.dom.key.value),
+			scale: JSON.parse(this.dom.scale.value) as [number, number],
+			accidental: parseInt(this.dom.accidental.value),
+			capo: parseInt(this.dom.capo.value),
+		};
+	}
 
 	darwFretboard(painter: Painter)
 	{
-		const paramInstrument = JSON.parse(this.domInstrument.value) as [number, number];
-		const paramKey = parseInt(e<HTMLInputElement>("key").value);
-		const paramScale = JSON.parse(e<HTMLInputElement>("scale").value) as [number, number];
-		const paramPage = parseInt(this.domPage.value);
-		const paramCapo = parseInt(this.domCapo.value);
-		const paramFrets = Math.max(parseInt(this.domFrets.value) - paramCapo, 1);
-		const paramAccidental = parseInt(this.domAccidental.value);
+		const param = this.getUiParams();
 
-		const instrument = INSTRUMENTS[paramInstrument[0]];
-		const tuning = INSTRUMENTS[paramInstrument[0]].tuning[paramInstrument[1]];
+		const instrument = INSTRUMENTS[param.instrument[0]];
+		const tuning = INSTRUMENTS[param.instrument[0]].tuning[param.instrument[1]];
 
-		this.domInstrumentName.innerText = instrument.name;
+		const scale = SCALES[param.scale[0]].scales[param.scale[1]];
 
-		const scale = SCALES[paramScale[0]].scales[paramScale[1]];
+		const pageW = Fretboard.PAGE_SIZES[param.page][0];
+		const pageH = Fretboard.PAGE_SIZES[param.page][1];
 
-		if (scale.degrees.length == 7)
-		{
-			let bn = Fretboard.getBaseNotes(paramKey, -1, scale);
-
-			if (bn[0] && this.domFlat.selected)
-			{
-				this.domAccidental.value = "0";
-			}
-
-			this.domFlat.disabled = bn[0];
-
-			bn = Fretboard.getBaseNotes(paramKey, 1, scale);
-
-			if (bn[0] && this.domSharp.selected)
-			{
-				this.domAccidental.value = "0";
-			}
-
-			this.domSharp.disabled = bn[0];
-		}
-		else
-		{
-			this.domFlat.disabled = false;
-			this.domSharp.disabled = false;
-		}
-
-		const pageW = Fretboard.PAGE_SIZES[paramPage][0];
-		const pageH = Fretboard.PAGE_SIZES[paramPage][1];
-
-		const degrees =
-			scale.degrees.map((x) => (x < 0 ? -1 : Utils.uMod(x + paramKey + paramAccidental, 12)));
+		const degrees = scale.degrees.map((x) => (x < 0 ? -1 : Utils.uMod(x + param.key + param.accidental, 12)));
 
 		let degreesAdd = scale.add;
 
 		if (degreesAdd)
 		{
-			degreesAdd =
-				degreesAdd.map((x) => (x < 0 ? -1 : Utils.uMod(x + paramKey + paramAccidental, 12)));
+			degreesAdd = degreesAdd.map((x) => (x < 0 ? -1 : Utils.uMod(x + param.key + param.accidental, 12)));
 		}
 
-		const fretSpacing = (pageW - Fretboard.LEFT - Fretboard.RIGHT) / paramFrets;
+		const fretSpacing = (pageW - Fretboard.LEFT - Fretboard.RIGHT) / param.frets;
 
 		painter.page(pageW, pageH);
 
@@ -140,24 +149,27 @@ class Fretboard
 
 		if (scale.degrees.length == 7)
 		{
-			notes = Fretboard.getBaseNotes(paramKey, paramAccidental, scale)[1];
+			notes = Fretboard.getBaseNotes(param.key, param.accidental, scale)[1];
 		}
 		else
 		{
-			notes = Fretboard.CHROMATIC_NOTES[paramAccidental >= 0 ? 0 : 1];
+			notes = Fretboard.CHROMATIC_NOTES[param.accidental >= 0 ? 0 : 1];
 		}
 
-		const acc = paramAccidental == -1 ? "♭ " : paramAccidental == 1 ? "♯ " : " ";
+		const acc = param.accidental == -1 ? "♭ " : param.accidental == 1 ? "♯ " : " ";
 
 		this.title =
-			`${instrument.name}: ${tuning.name} tuning; ${Fretboard.CHROMATIC_NOTES[0][paramKey]}${acc}${scale.name} scale`;
+			`${instrument.name}: ${tuning.name} tuning; ${Fretboard.CHROMATIC_NOTES[0][param.key]}${acc}${scale.name} scale`;
 
-		if (paramCapo)
+		if (param.capo)
 		{
-			this.title += `; Capo ${Utils.toRoman(paramCapo)} fret`;
+			this.title += `; Capo ${Utils.toRoman(param.capo)} fret`;
 		}
 
-		this.fileTitle = this.title.replace(/♯/g, " sharp").replace(/♭/g, " flat").replace(/[^A-Za-z0-9]+/g, "_");
+		this.fileTitle = this.title
+			.replace(/♯/g, " sharp")
+			.replace(/♭/g, " flat")
+			.replace(/[^A-Za-z0-9]+/g, "_");
 
 		painter.textMiddle(this.title, pageW / 2, Fretboard.PAGE_TOP, 4);
 		painter.textMiddle(
@@ -165,29 +177,32 @@ class Fretboard
 			pageW / 2,
 			pageH - Fretboard.PAGE_BOTTOM,
 			undefined,
-			"https://fretwork.eb.lv");
+			"https://fretwork.eb.lv"
+		);
 
-		for (let x = 0; x < paramFrets + 1; ++x)
+		for (let x = 0; x < param.frets + 1; ++x)
 		{
 			painter.line(
 				Fretboard.LEFT + fretSpacing * x,
 				Fretboard.STRING_TOP,
 				Fretboard.LEFT + fretSpacing * x,
 				Fretboard.STRING_TOP + (instrument.strings - 1) * Fretboard.STRING_SPACING,
-				(x == 0) ? "#555555" : "#CCCCCC",
-				(x == 0) ? 1.5 : 1,
-				(x == 0) ? "square" : "round");
+				x == 0 ? "#555555" : "#CCCCCC",
+				x == 0 ? 1.5 : 1,
+				x == 0 ? "square" : "round"
+			);
 		}
 
-		if (paramCapo)
+		if (param.capo)
 		{
 			painter.textMiddle(
-				"Capo " + Utils.toRoman(paramCapo),
+				"Capo " + Utils.toRoman(param.capo),
 				Fretboard.LEFT,
 				Fretboard.STRING_TOP - 5,
 				undefined,
 				undefined,
-				Utils.adjustBrightness("#ee8866", 0.8));
+				Utils.adjustBrightness("#ee8866", 0.8)
+			);
 		}
 
 		for (let y = 0; y < instrument.strings; ++y)
@@ -198,14 +213,15 @@ class Fretboard
 				pageW - Fretboard.RIGHT,
 				Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING,
 				"black",
-				0.2);
+				0.2
+			);
 		}
 
 		if (instrument.dots)
 		{
-			const dots = instrument.dots.slice(paramCapo);
+			const dots = instrument.dots.slice(param.capo);
 
-			for (let x = 0; x < Math.min(dots.length, paramFrets); ++x)
+			for (let x = 0; x < Math.min(dots.length, param.frets); ++x)
 			{
 				for (let i = 0; i < dots[x]; ++i)
 				{
@@ -213,16 +229,17 @@ class Fretboard
 						Fretboard.STRING_SPACING / 6,
 						Fretboard.LEFT + (x + 1) * fretSpacing - fretSpacing / 2,
 						Fretboard.STRING_TOP + instrument.strings * Fretboard.STRING_SPACING + i * (Fretboard.STRING_SPACING / 3 + 0.5),
-						"grey");
+						"grey"
+					);
 				}
 			}
 		}
 
 		for (let y = instrument.strings - 1; y > -1; --y)
 		{
-			for (let x = 0; x < paramFrets + 1; ++x)
+			for (let x = 0; x < param.frets + 1; ++x)
 			{
-				const pitch = tuning.pitches[instrument.strings - y - 1] + paramCapo + x;
+				const pitch = tuning.pitches[instrument.strings - y - 1] + param.capo + x;
 
 				const noteIndex = Utils.uMod(pitch, notes.length);
 
@@ -251,102 +268,124 @@ class Fretboard
 						Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING,
 						circleFillColor,
 						circleColor,
-						0.5);
+						0.5
+					);
 
-					painter.textMiddle(
-						notes[noteIndex],
-						cx,
-						Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING);
+					painter.textMiddle(notes[noteIndex], cx, Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING);
 				}
 			}
 		}
 	}
 
-	darwFretboardSvg(event: Event)
+	darwFretboardSvg()
 	{
-		if (this.freatboard)
+		while (this.freatboard.firstChild)
 		{
-			while (this.freatboard.firstChild)
-			{
-				this.freatboard.firstChild.remove();
-			}
-
-			const paramInstrument = JSON.parse(this.domInstrument.value) as [number, number];
-			const instrument = INSTRUMENTS[paramInstrument[0]];
-
-			this.domInstrumentName.innerText = instrument.name;
-
-			if (instrument.frets && event.target == this.domInstrument)
-			{
-				this.domFrets.value = instrument.frets.toString();
-				this.domCapo.value = "0";
-			}
-
-			const painter = new PainterSvg();
-
-			this.darwFretboard(painter);
-
-			this.freatboard.appendChild(painter.getSvg());
-
-			this.resizeFretboard(event);
+			this.freatboard.firstChild.remove();
 		}
+
+		const painter = new PainterSvg();
+
+		this.darwFretboard(painter);
+
+		this.freatboard.appendChild(painter.getSvg());
 	}
 
 	resizeFretboard(event: Event)
 	{
 		const svg = this.freatboard.firstChild as SVGSVGElement;
 
-		if (this.freatboard && svg)
+		if (event.type == "beforeprint")
 		{
-			if (event.type == "beforeprint")
-			{
-				this.printStarted = true;
-			}
-			else if (event.type == "afterprint")
-			{
-				this.printStarted = false;
-			}
+			this.printStarted = true;
+		}
+		else if (event.type == "afterprint")
+		{
+			this.printStarted = false;
+		}
 
-			let scale = 1;
+		let scale = 1;
 
-			if (this.freatboard.parentElement && !this.printStarted)
+		if (this.freatboard.parentElement && !this.printStarted)
+		{
+			const scaleW = this.freatboard.parentElement.clientWidth / svg.width.baseVal.value;
+			const scaleH = this.freatboard.parentElement.clientHeight / svg.height.baseVal.value;
+			scale = Math.min(scaleW, scaleH);
+		}
+		else
+		{
+			const style = document.querySelector("style");
+			if (style)
 			{
-				const scaleW = this.freatboard.parentElement.clientWidth / svg.width.baseVal.value;
-				const scaleH = this.freatboard.parentElement.clientHeight / svg.height.baseVal.value;
-				scale = Math.min(scaleW, scaleH);
-			}
-			else
-			{
-				const style = document.querySelector("style");
-				if (style)
+				style.textContent += "@media print { @page { size: ";
+
+				switch (this.dom.page.value)
 				{
-					style.textContent += "@media print { @page { size: ";
-
-					switch (this.domPage.value)
-					{
-						default:
-						case "0":
-							style.textContent += "A4 landscape";
-							break;
-						case "1":
-							style.textContent += "A4 portrait";
-							break;
-						case "2":
-							style.textContent += "Letter landscape";
-							break;
-						case "3":
-							style.textContent += "Letter portrait";
-							break;
-					}
-
-					style.textContent += "; } }";
+					default:
+					case "0":
+						style.textContent += "A4 landscape";
+						break;
+					case "1":
+						style.textContent += "A4 portrait";
+						break;
+					case "2":
+						style.textContent += "Letter landscape";
+						break;
+					case "3":
+						style.textContent += "Letter portrait";
+						break;
 				}
+
+				style.textContent += "; } }";
+			}
+		}
+
+		const trans = svg.createSVGTransform();
+		trans.setScale(scale, scale);
+		this.freatboard.transform.baseVal.clear();
+		this.freatboard.transform.baseVal.appendItem(trans);
+	}
+
+	uiUpdate(event: Event)
+	{
+		const param = this.getUiParams();
+
+		const instrument = INSTRUMENTS[param.instrument[0]];
+
+		this.dom.instrumentName.innerText = instrument.name;
+
+		if (instrument.frets && event.target == this.dom.instrument)
+		{
+			this.dom.frets.value = instrument.frets.toString();
+			this.dom.capo.value = "0";
+		}
+
+		const scale = SCALES[param.scale[0]].scales[param.scale[1]];
+
+		if (scale.degrees.length == 7)
+		{
+			let bn = Fretboard.getBaseNotes(param.key, -1, scale);
+
+			if (bn[0] && this.dom.flat.selected)
+			{
+				this.dom.accidental.value = "0";
 			}
 
-			const trans = svg.createSVGTransform();
-			trans.setScale(scale, scale);
-			this.freatboard.transform.baseVal.clear();
-			this.freatboard.transform.baseVal.appendItem(trans);
+			this.dom.flat.disabled = bn[0];
+
+			bn = Fretboard.getBaseNotes(param.key, 1, scale);
+
+			if (bn[0] && this.dom.sharp.selected)
+			{
+				this.dom.accidental.value = "0";
+			}
+
+			this.dom.sharp.disabled = bn[0];
+		}
+		else
+		{
+			this.dom.flat.disabled = false;
+			this.dom.sharp.disabled = false;
 		}
 	}
 
@@ -435,7 +474,11 @@ window.addEventListener("DOMContentLoaded", () =>
 {
 	const fb = new Fretboard();
 
-	window.addEventListener("load", fb.darwFretboardSvg.bind(fb));
+	window.addEventListener("load", (event) =>
+	{
+		fb.darwFretboardSvg();
+		fb.resizeFretboard(event);
+	});
 
 	window.addEventListener("resize", fb.resizeFretboard.bind(fb));
 	window.addEventListener("beforeprint", fb.resizeFretboard.bind(fb));
@@ -443,88 +486,85 @@ window.addEventListener("DOMContentLoaded", () =>
 
 	const domInstrument: HTMLSelectElement = e("instrument");
 
-	if (domInstrument)
+	for (let i = 0; i < INSTRUMENTS.length; ++i)
 	{
-		for (let i = 0; i < INSTRUMENTS.length; ++i)
+		const opG = document.createElement("optgroup");
+
+		opG.label = INSTRUMENTS[i].name;
+
+		for (let j = 0; j < INSTRUMENTS[i].tuning.length; ++j)
 		{
-			const opG = document.createElement("optgroup");
+			const op = document.createElement("option");
 
-			opG.label = INSTRUMENTS[i].name;
+			op.value = `[${i}, ${j}]`;
+			op.text = INSTRUMENTS[i].tuning[j].name + " (";
 
-			for (let j = 0; j < INSTRUMENTS[i].tuning.length; ++j)
+			INSTRUMENTS[i].tuning[j].pitches.forEach((x: number) =>
 			{
-				const op = document.createElement("option");
+				op.text +=
+					Fretboard.CHROMATIC_NOTES[0][Utils.uMod(x, 12)] +
+					"\uFE0E" +
+					String.fromCharCode(0x2080 + Math.floor(2 + (x - 3) / 12));
+			});
 
-				op.value = `[${i}, ${j}]`;
-				op.text = INSTRUMENTS[i].tuning[j].name + " (";
+			op.text += ")";
 
-				INSTRUMENTS[i].tuning[j].pitches.forEach((x: number) =>
-				{
-					op.text += Fretboard.CHROMATIC_NOTES[0][Utils.uMod(x, 12)] + "\uFE0E" +
-						String.fromCharCode(0x2080 + Math.floor(2 + (x - 3) / 12));
-				});
-
-				op.text += ")";
-
-				opG.appendChild(op);
-			}
-
-			domInstrument.appendChild(opG);
+			opG.appendChild(op);
 		}
+
+		domInstrument.appendChild(opG);
 	}
 
 	const domScale: HTMLSelectElement = e("scale");
 
-	if (domScale)
+	for (let i = 0; i < SCALES.length; ++i)
 	{
-		for (let i = 0; i < SCALES.length; ++i)
+		const opG = document.createElement("optgroup");
+
+		opG.label = SCALES[i].label;
+
+		for (let j = 0; j < SCALES[i].scales.length; ++j)
 		{
-			const opG = document.createElement("optgroup");
+			const op = document.createElement("option");
 
-			opG.label = SCALES[i].label;
+			op.value = `[${i}, ${j}]`;
+			op.text = SCALES[i].scales[j].name;
 
-			for (let j = 0; j < SCALES[i].scales.length; ++j)
+			if (SCALES[i].scales[j].selected)
 			{
-				const op = document.createElement("option");
-
-				op.value = `[${i}, ${j}]`;
-				op.text = SCALES[i].scales[j].name;
-
-				if (SCALES[i].scales[j].selected)
-				{
-					op.selected = true;
-				}
-
-				opG.appendChild(op);
+				op.selected = true;
 			}
 
-			domScale.appendChild(opG);
+			opG.appendChild(op);
 		}
+
+		domScale.appendChild(opG);
 	}
 
 	const toUpdate = ["instrument", "frets", "capo", "key", "accidental", "scale", "page"];
 
 	toUpdate.forEach((element) =>
 	{
-		e<HTMLElement>(element)?.addEventListener("change", fb.darwFretboardSvg.bind(fb));
+		e<HTMLElement>(element).addEventListener("change", (event) =>
+		{
+			fb.uiUpdate(event);
+			fb.darwFretboardSvg();
+		});
 	});
 
 	const domSaveSvg: HTMLButtonElement = e("save_svg");
-	domSaveSvg?.addEventListener("click", () =>
+	domSaveSvg.addEventListener("click", () =>
 	{
 		const svg: SVGGElement = e("fretboard");
 
-		if (svg)
-		{
-			const fileContent =
-				'data:image/svg+xml,' + encodeURIComponent('<?xml version="1.0" encoding="UTF-8"?>' + svg.innerHTML);
+		const fileContent =
+			"data:image/svg+xml," + encodeURIComponent('<?xml version="1.0" encoding="UTF-8"?>' + svg.innerHTML);
 
-			Utils.saveAs(fileContent, fb.fileTitle);
-		}
+		Utils.saveAs(fileContent, fb.fileTitle);
 	});
 
 	const domSavePdf: HTMLButtonElement = e("save_pdf");
-	domSavePdf?.addEventListener("click", () =>
+	domSavePdf.addEventListener("click", () =>
 	{
 		const pdf = new PainterPdf();
 

@@ -17,13 +17,15 @@ export abstract class Painter
 	abstract textMiddle(text: string, x: number, y: number, size?: number, link?: string, color?: string): void;
 	abstract circle(radius: number, cx: number, cy: number, fill: string, stroke?: string, width?: number): void;
 
-	abstract line(x1: number,
+	abstract line(
+		x1: number,
 		y1: number,
 		x2: number,
 		y2: number,
 		stroke: string,
 		width: number,
-		linecap?: PainterLineCap): void;
+		linecap?: PainterLineCap
+	): void;
 }
 
 //----------------------------------------------------------------------------------------------------------------------

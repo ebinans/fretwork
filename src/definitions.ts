@@ -90,7 +90,7 @@ export const INSTRUMENTS: readonly Instrument[] = [
 				name: "New Standard",
 				pitches: [3, 10, 17, 24, 31, 34],
 			},
-		]
+		],
 	},
 	{
 		name: "Bass guitar",
@@ -102,7 +102,7 @@ export const INSTRUMENTS: readonly Instrument[] = [
 				name: "Standard",
 				pitches: [-5, 0, 5, 10],
 			},
-		]
+		],
 	},
 	{
 		name: "Bass guitar, 5 string",
@@ -114,7 +114,7 @@ export const INSTRUMENTS: readonly Instrument[] = [
 				name: "Standard",
 				pitches: [-10, -5, 0, 5, 10],
 			},
-		]
+		],
 	},
 	{
 		name: "Ukulele",
@@ -126,8 +126,8 @@ export const INSTRUMENTS: readonly Instrument[] = [
 				name: "Soprano in C",
 				pitches: [10, 3, 7, 12].map((x) => x + 24),
 			},
-		]
-	}
+		],
+	},
 ] as const;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -138,7 +138,7 @@ export interface Scale
 	readonly degrees: readonly number[];
 	readonly add?: readonly number[];
 	readonly selected?: boolean;
-};
+}
 
 export interface ScaleGroup
 {
@@ -154,7 +154,7 @@ export const SCALES: readonly ScaleGroup[] = [
 				name: "Chromatic",
 				degrees: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
 			},
-		]
+		],
 	},
 	{
 		label: "Diatonic",
@@ -188,7 +188,7 @@ export const SCALES: readonly ScaleGroup[] = [
 				name: "Locrian",
 				degrees: [0, 1, 3, 5, 6, 8, 10],
 			},
-		]
+		],
 	},
 	{
 		label: "Heptatonic",
@@ -201,7 +201,7 @@ export const SCALES: readonly ScaleGroup[] = [
 				name: "Melodic minor",
 				degrees: [0, 2, 3, 5, 7, 9, 11],
 			},
-		]
+		],
 	},
 	{
 		label: "Pentatonic",
@@ -214,7 +214,7 @@ export const SCALES: readonly ScaleGroup[] = [
 				name: "Minor pentatonic",
 				degrees: [0, -1, 3, 5, 7, -1, 10],
 			},
-		]
+		],
 	},
 	{
 		label: "Hexatonic",
@@ -229,8 +229,8 @@ export const SCALES: readonly ScaleGroup[] = [
 				degrees: [0, -1, 3, 5, 7, -1, 10],
 				add: [6],
 			},
-		]
-	}
+		],
+	},
 ] as const;
 
 //----------------------------------------------------------------------------------------------------------------------

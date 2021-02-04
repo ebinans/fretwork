@@ -6,8 +6,8 @@
  */
 //----------------------------------------------------------------------------------------------------------------------
 
-import PDFDocument = require('pdfkit');
-import blobStream = require('blob-stream');
+import PDFDocument = require("pdfkit");
+import blobStream = require("blob-stream");
 
 import { Utils } from "./Utils";
 import { Painter, PainterLineCap } from "./Painter";
@@ -21,11 +21,11 @@ export class PainterPdf extends Painter
 
 	savePdf(filename: string)
 	{
-		this.stream.on('finish', () =>
+		this.stream.on("finish", () =>
 		{
 			const link = document.createElement("a");
 
-			link.href = this.stream.toBlobURL('application/pdf');
+			link.href = this.stream.toBlobURL("application/pdf");
 			link.download = filename;
 			link.click();
 		});
@@ -44,8 +44,8 @@ export class PainterPdf extends Painter
 	async loadFonts()
 	{
 		await fetch("font/DejaVuSans-Bold.ttf")
-			.then(response => response.arrayBuffer())
-			.then(font => this.pdf.registerFont("DejaVu Sans Bold", font));
+			.then((response) => response.arrayBuffer())
+			.then((font) => this.pdf.registerFont("DejaVu Sans Bold", font));
 	}
 
 	page(pageW: number, pageH: number)
@@ -66,7 +66,15 @@ export class PainterPdf extends Painter
 		this.pdf.text(text, Utils.mmToPt(x) - textWidth / 2, Utils.mmToPt(y) - textHeight / 2, { link: link });
 	}
 
-	line(x1: number, y1: number, x2: number, y2: number, stroke: string, width: number, linecap?: PainterLineCap): void
+	line(
+		x1: number,
+		y1: number,
+		x2: number,
+		y2: number,
+		stroke: string,
+		width: number,
+		linecap?: PainterLineCap
+	): void
 	{
 		this.pdf.lineCap(linecap ? linecap : "butt");
 
