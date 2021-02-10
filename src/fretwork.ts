@@ -120,7 +120,7 @@ class Fretboard
 		};
 	}
 
-	darwFretboard(painter: Painter)
+	darwFretboard(painter: Painter): void
 	{
 		const param = this.getUiParams();
 
@@ -132,13 +132,13 @@ class Fretboard
 		const pageW = Fretboard.PAGE_SIZES[param.page][0];
 		const pageH = Fretboard.PAGE_SIZES[param.page][1];
 
-		const degrees = scale.degrees.map((x) => (x < 0 ? -1 : Utils.uMod(x + param.key + param.accidental, 12)));
+		const degrees = scale.degrees.map(x => (x < 0 ? -1 : Utils.uMod(x + param.key + param.accidental, 12)));
 
 		let degreesAdd = scale.add;
 
 		if (degreesAdd)
 		{
-			degreesAdd = degreesAdd.map((x) => (x < 0 ? -1 : Utils.uMod(x + param.key + param.accidental, 12)));
+			degreesAdd = degreesAdd.map(x => (x < 0 ? -1 : Utils.uMod(x + param.key + param.accidental, 12)));
 		}
 
 		const fretSpacing = (pageW - Fretboard.LEFT - Fretboard.RIGHT) / param.frets;
@@ -159,7 +159,8 @@ class Fretboard
 		const acc = param.accidental == -1 ? "♭ " : param.accidental == 1 ? "♯ " : " ";
 
 		this.title =
-			`${instrument.name}: ${tuning.name} tuning; ${Fretboard.CHROMATIC_NOTES[0][param.key]}${acc}${scale.name} scale`;
+			`${instrument.name}: ${tuning.name} tuning; ${Fretboard.CHROMATIC_NOTES[0][param.key]
+			}${acc}${scale.name} scale`;
 
 		if (param.capo)
 		{
@@ -196,7 +197,7 @@ class Fretboard
 		if (param.capo)
 		{
 			painter.textMiddle(
-				"Capo " + Utils.toRoman(param.capo),
+				`Capo ${Utils.toRoman(param.capo)}`,
 				Fretboard.LEFT,
 				Fretboard.STRING_TOP - 5,
 				undefined,
@@ -228,7 +229,8 @@ class Fretboard
 					painter.circle(
 						Fretboard.STRING_SPACING / 6,
 						Fretboard.LEFT + (x + 1) * fretSpacing - fretSpacing / 2,
-						Fretboard.STRING_TOP + instrument.strings * Fretboard.STRING_SPACING + i * (Fretboard.STRING_SPACING / 3 + 0.5),
+						Fretboard.STRING_TOP + instrument.strings * Fretboard.STRING_SPACING + i
+						* (Fretboard.STRING_SPACING / 3 + 0.5),
 						"grey"
 					);
 				}
@@ -277,7 +279,7 @@ class Fretboard
 		}
 	}
 
-	darwFretboardSvg()
+	darwFretboardSvg(): void
 	{
 		while (this.freatboard.firstChild)
 		{
@@ -291,7 +293,7 @@ class Fretboard
 		this.freatboard.appendChild(painter.getSvg());
 	}
 
-	resizeFretboard(event: Event)
+	resizeFretboard(event: Event): void
 	{
 		const svg = this.freatboard.firstChild as SVGSVGElement;
 
@@ -346,7 +348,7 @@ class Fretboard
 		this.freatboard.transform.baseVal.appendItem(trans);
 	}
 
-	uiUpdate(event: Event)
+	uiUpdate(event: Event): void
 	{
 		const param = this.getUiParams();
 
@@ -395,8 +397,8 @@ class Fretboard
 		scale: Scale
 	): [boolean, string[], number, number]
 	{
-		const degrees = scale.degrees.map((x) => (x < 0 ? -1 : Utils.uMod(x + paramKey + paramAccidental, 12)));
-		const baseIndex = Fretboard.BASE_NOTES.findIndex((x) => x[1] == paramKey);
+		const degrees = scale.degrees.map(x => (x < 0 ? -1 : Utils.uMod(x + paramKey + paramAccidental, 12)));
+		const baseIndex = Fretboard.BASE_NOTES.findIndex(x => x[1] == paramKey);
 
 		function distance(first: number, second: number, max: number): number
 		{
@@ -414,7 +416,7 @@ class Fretboard
 			}
 		}
 
-		let retval: string[] = [];
+		const retval: string[] = [];
 		let hasDouble = false;
 		let flats = 0;
 		let sharps = 0;
@@ -476,6 +478,7 @@ window.addEventListener("DOMContentLoaded", () =>
 
 	window.addEventListener("load", (event) =>
 	{
+		fb.uiUpdate(event);
 		fb.darwFretboardSvg();
 		fb.resizeFretboard(event);
 	});
@@ -497,14 +500,13 @@ window.addEventListener("DOMContentLoaded", () =>
 			const op = document.createElement("option");
 
 			op.value = `[${i}, ${j}]`;
-			op.text = INSTRUMENTS[i].tuning[j].name + " (";
+			op.text = `${INSTRUMENTS[i].tuning[j].name} (`;
 
 			INSTRUMENTS[i].tuning[j].pitches.forEach((x: number) =>
 			{
 				op.text +=
-					Fretboard.CHROMATIC_NOTES[0][Utils.uMod(x, 12)] +
-					"\uFE0E" +
-					String.fromCharCode(0x2080 + Math.floor(2 + (x - 3) / 12));
+					`${Fretboard.CHROMATIC_NOTES[0][Utils.uMod(x, 12)]
+					}\uFE0E${String.fromCharCode(0x2080 + Math.floor(2 + (x - 3) / 12))}`;
 			});
 
 			op.text += ")";
@@ -558,7 +560,7 @@ window.addEventListener("DOMContentLoaded", () =>
 		const svg: SVGGElement = e("fretboard");
 
 		const fileContent =
-			"data:image/svg+xml," + encodeURIComponent('<?xml version="1.0" encoding="UTF-8"?>' + svg.innerHTML);
+			`data:image/svg+xml,${encodeURIComponent(`<?xml version="1.0" encoding="UTF-8"?>${svg.innerHTML}`)}`;
 
 		Utils.saveAs(fileContent, fb.fileTitle);
 	});

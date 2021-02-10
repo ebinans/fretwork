@@ -19,7 +19,7 @@ export class PainterPdf extends Painter
 	private pdf: PDFKit.PDFDocument;
 	private stream: blobStream.IBlobStream;
 
-	savePdf(filename: string)
+	savePdf(filename: string): void
 	{
 		this.stream.on("finish", () =>
 		{
@@ -41,14 +41,14 @@ export class PainterPdf extends Painter
 		this.stream = this.pdf.pipe(blobStream());
 	}
 
-	async loadFonts()
+	async loadFonts(): Promise<void>
 	{
 		await fetch("font/DejaVuSans-Bold.ttf")
-			.then((response) => response.arrayBuffer())
-			.then((font) => this.pdf.registerFont("DejaVu Sans Bold", font));
+			.then(response => response.arrayBuffer())
+			.then(font => this.pdf.registerFont("DejaVu Sans Bold", font));
 	}
 
-	page(pageW: number, pageH: number)
+	page(pageW: number, pageH: number): void
 	{
 		this.pdf.addPage({ size: [Utils.mmToPtInt(pageW), Utils.mmToPtInt(pageH)], margin: 0 });
 		this.pdf.font("DejaVu Sans Bold");

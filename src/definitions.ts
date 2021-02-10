@@ -124,7 +124,7 @@ export const INSTRUMENTS: readonly Instrument[] = [
 		tuning: [
 			{
 				name: "Soprano in C",
-				pitches: [10, 3, 7, 12].map((x) => x + 24),
+				pitches: [10, 3, 7, 12].map(x => x + 24),
 			},
 		],
 	},

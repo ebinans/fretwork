@@ -27,13 +27,13 @@ export class PainterSvg extends Painter
 		this.svg = document.createElementNS(NS, "svg");
 	}
 
-	page(pageW: number, pageH: number)
+	page(pageW: number, pageH: number): void
 	{
 		this.svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-		this.svg.setAttribute("width", pageW + "mm");
-		this.svg.setAttribute("height", pageH + "mm");
+		this.svg.setAttribute("width", `${pageW}mm`);
+		this.svg.setAttribute("height", `${pageH}mm`);
 		this.svg.setAttribute("font-family", "'DejaVu Sans', Verdana, Geneva, Tahoma, sans-serif");
-		this.svg.setAttribute("font-size", Painter.DEFAULT_FONT_SIZE + "mm");
+		this.svg.setAttribute("font-size", `${Painter.DEFAULT_FONT_SIZE}mm`);
 		this.svg.setAttribute("font-weight", "bold");
 		this.svg.setAttribute("fill", Painter.DEFAULT_FONT_COLOR);
 		this.svg.setAttribute("text-anchor", "middle");
@@ -54,12 +54,12 @@ export class PainterSvg extends Painter
 
 		textNode.textContent = text;
 
-		textNode.setAttribute("x", x + "mm");
-		textNode.setAttribute("y", y + "mm");
+		textNode.setAttribute("x", `${x}mm`);
+		textNode.setAttribute("y", `${y}mm`);
 
 		if (size)
 		{
-			textNode.setAttribute("font-size", size + "mm");
+			textNode.setAttribute("font-size", `${size}mm`);
 		}
 
 		if (color)
@@ -92,12 +92,12 @@ export class PainterSvg extends Painter
 	{
 		const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 
-		line.setAttribute("x1", x1 + "mm");
-		line.setAttribute("y1", y1 + "mm");
-		line.setAttribute("x2", x2 + "mm");
-		line.setAttribute("y2", y2 + "mm");
+		line.setAttribute("x1", `${x1}mm`);
+		line.setAttribute("y1", `${y1}mm`);
+		line.setAttribute("x2", `${x2}mm`);
+		line.setAttribute("y2", `${y2}mm`);
 		line.setAttribute("stroke", stroke);
-		line.setAttribute("stroke-width", width + "mm");
+		line.setAttribute("stroke-width", `${width}mm`);
 
 		if (linecap)
 		{
@@ -111,9 +111,9 @@ export class PainterSvg extends Painter
 	{
 		const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
 
-		circle.setAttribute("r", radius + "mm");
-		circle.setAttribute("cx", cx + "mm");
-		circle.setAttribute("cy", cy + "mm");
+		circle.setAttribute("r", `${radius}mm`);
+		circle.setAttribute("cx", `${cx}mm`);
+		circle.setAttribute("cy", `${cy}mm`);
 		circle.setAttribute("fill", fill);
 
 		if (stroke)
@@ -123,7 +123,7 @@ export class PainterSvg extends Painter
 
 		if (width)
 		{
-			circle.setAttribute("stroke-width", width + "mm");
+			circle.setAttribute("stroke-width", `${width}mm`);
 		}
 
 		this.svg.appendChild(circle);

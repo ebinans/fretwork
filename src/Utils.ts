@@ -33,10 +33,10 @@ export class Utils
 
 		rgb = (r << 16) | (g << 8) | b;
 
-		return "#" + rgb.toString(16).padStart(6, "0");
+		return `#${rgb.toString(16).padStart(6, "0")}`;
 	}
 
-	static saveAs(uri: string, filename: string)
+	static saveAs(uri: string, filename: string): void
 	{
 		const link = document.createElement("a");
 
@@ -63,7 +63,7 @@ export class Utils
 
 	static toRoman(num: number): string
 	{
-		for (var i = 0; i < Utils.romanMatrix.length; i++)
+		for (let i = 0; i < Utils.romanMatrix.length; i++)
 		{
 			if (num >= Utils.romanMatrix[i][0])
 			{
