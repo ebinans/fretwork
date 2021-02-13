@@ -14,7 +14,7 @@ import { Scale, INSTRUMENTS, SCALES } from "./definitions";
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function e<T>(id: string): T
+function $<T = HTMLElement>(id: string): T
 {
 	const element = document.getElementById(id);
 
@@ -84,7 +84,7 @@ class Fretboard
 		"#ffaabb",
 		"#44bb99",
 		"#dddddd",
-		"aaaa00",
+		"#aaaa00",
 	] as const;
 
 	fileTitle = "";
@@ -92,19 +92,19 @@ class Fretboard
 	private title = "";
 	private printStarted = false;
 
-	private readonly freatboard: SVGGElement = e("fretboard");
+	private readonly freatboard: SVGGElement = $("fretboard");
 
 	private readonly dom = {
-		page: e<HTMLInputElement>("page"),
-		frets: e<HTMLInputElement>("frets"),
-		instrument: e<HTMLInputElement>("instrument"),
-		key: e<HTMLInputElement>("key"),
-		scale: e<HTMLInputElement>("scale"),
-		accidental: e<HTMLInputElement>("accidental"),
-		instrumentName: e<HTMLSpanElement>("name"),
-		flat: e<HTMLOptionElement>("flat"),
-		sharp: e<HTMLOptionElement>("sharp"),
-		capo: e<HTMLInputElement>("capo")
+		page: $<HTMLInputElement>("page"),
+		frets: $<HTMLInputElement>("frets"),
+		instrument: $<HTMLInputElement>("instrument"),
+		key: $<HTMLInputElement>("key"),
+		scale: $<HTMLInputElement>("scale"),
+		accidental: $<HTMLInputElement>("accidental"),
+		instrumentName: $<HTMLSpanElement>("name"),
+		flat: $<HTMLOptionElement>("flat"),
+		sharp: $<HTMLOptionElement>("sharp"),
+		capo: $<HTMLInputElement>("capo")
 	};
 
 	private getUiParams(): Params
@@ -487,7 +487,7 @@ window.addEventListener("DOMContentLoaded", () =>
 	window.addEventListener("beforeprint", fb.resizeFretboard.bind(fb));
 	window.addEventListener("afterprint", fb.resizeFretboard.bind(fb));
 
-	const domInstrument: HTMLSelectElement = e("instrument");
+	const domInstrument: HTMLSelectElement = $("instrument");
 
 	for (let i = 0; i < INSTRUMENTS.length; ++i)
 	{
@@ -517,7 +517,7 @@ window.addEventListener("DOMContentLoaded", () =>
 		domInstrument.appendChild(opG);
 	}
 
-	const domScale: HTMLSelectElement = e("scale");
+	const domScale: HTMLSelectElement = $("scale");
 
 	for (let i = 0; i < SCALES.length; ++i)
 	{
@@ -547,26 +547,21 @@ window.addEventListener("DOMContentLoaded", () =>
 
 	toUpdate.forEach((element) =>
 	{
-		e<HTMLElement>(element).addEventListener("change", (event) =>
+		$(element).addEventListener("change", (event) =>
 		{
 			fb.uiUpdate(event);
 			fb.darwFretboardSvg();
+			fb.resizeFretboard(event);
 		});
 	});
 
-	const domSaveSvg: HTMLButtonElement = e("save_svg");
-	domSaveSvg.addEventListener("click", () =>
+	$("save_svg").addEventListener("click", () =>
 	{
-		const svg: SVGGElement = e("fretboard");
-
-		const fileContent =
-			`data:image/svg+xml,${encodeURIComponent(`<?xml version="1.0" encoding="UTF-8"?>${svg.innerHTML}`)}`;
-
-		Utils.saveAs(fileContent, fb.fileTitle);
+		Utils.saveAs(`data:image/svg+xml,${encodeURIComponent(
+			`<?xml version="1.0" encoding="UTF-8"?>${$("fretboard").innerHTML}`)}`, fb.fileTitle);
 	});
 
-	const domSavePdf: HTMLButtonElement = e("save_pdf");
-	domSavePdf.addEventListener("click", () =>
+	$("save_pdf").addEventListener("click", () =>
 	{
 		const pdf = new PainterPdf();
 
