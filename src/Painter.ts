@@ -15,7 +15,16 @@ export abstract class Painter
 
 	abstract page(pageW: number, pageH: number): void;
 	abstract textMiddle(text: string, x: number, y: number, size?: number, link?: string, color?: string): void;
-	abstract circle(radius: number, cx: number, cy: number, fill: string, stroke?: string, width?: number): void;
+
+	abstract circle(
+		radius: number,
+		cx: number,
+		cy: number,
+		fill: string,
+		stroke?: string,
+		width?: number,
+		data?: unknown
+	): void;
 
 	abstract line(
 		x1: number,

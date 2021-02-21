@@ -11,6 +11,7 @@ import { PainterPdf } from "./PainterPdf";
 import { Painter } from "./Painter";
 import { Utils } from "./Utils";
 import { Scale, INSTRUMENTS, SCALES } from "./definitions";
+import tinycolor = require("tinycolor2");
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -111,7 +112,7 @@ class Fretboard
 	{
 		return {
 			page: parseInt(this.dom.page.value),
-			frets: Math.max(parseInt(this.dom.frets.value) - parseInt(this.dom.capo.value), 1),
+			frets: parseInt(this.dom.frets.value) - parseInt(this.dom.capo.value),
 			instrument: JSON.parse(this.dom.instrument.value) as [number, number],
 			key: parseInt(this.dom.key.value),
 			scale: JSON.parse(this.dom.scale.value) as [number, number],
@@ -202,7 +203,7 @@ class Fretboard
 				Fretboard.STRING_TOP - 5,
 				undefined,
 				undefined,
-				Utils.adjustBrightness("#ee8866", 0.8)
+				tinycolor("#ee8866").darken(12).toHexString()
 			);
 		}
 
@@ -213,7 +214,7 @@ class Fretboard
 				Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING,
 				pageW - Fretboard.RIGHT,
 				Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING,
-				"black",
+				"#333333",
 				0.2
 			);
 		}
@@ -249,12 +250,23 @@ class Fretboard
 				{
 					const colorIndex = Math.floor((12 + pitch - degrees[0]) / notes.length) + 1;
 
-					const circleColor = Utils.adjustBrightness(Fretboard.COLORS[colorIndex], 0.8);
+					let circleColor = tinycolor(Fretboard.COLORS[colorIndex]).darken(12).toHexString();
 					let circleFillColor = Fretboard.COLORS[colorIndex];
 
 					if (noteIndex == degrees[0])
 					{
 						circleFillColor = "white";
+					}
+
+					const shadow = this.highlights.length && this.getHighlight([x, y]) == -1;
+
+					if (shadow)
+					{
+						circleFillColor = tinycolor.mix(
+							tinycolor(circleFillColor).desaturate(40),
+							"white", 40).toHexString();
+
+						circleColor = tinycolor.mix(tinycolor(circleColor).desaturate(40), "white", 40).toHexString();
 					}
 
 					let cx = Fretboard.LEFT + x * fretSpacing - fretSpacing / 2;
@@ -270,12 +282,54 @@ class Fretboard
 						Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING,
 						circleFillColor,
 						circleColor,
-						0.5
+						0.5,
+						[x, y]
 					);
 
-					painter.textMiddle(notes[noteIndex], cx, Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING);
+					painter.textMiddle(
+						notes[noteIndex],
+						cx,
+						Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING,
+						undefined,
+						undefined,
+						shadow ? tinycolor.mix("#333333", "white", 40).toHexString() : undefined
+					);
 				}
 			}
+		}
+	}
+
+	highlights: [number, number][] = [];
+
+	clearHighlights(): void
+	{
+		this.highlights = [];
+	}
+
+	getHighlight(highlight: [number, number]): number
+	{
+		for (let i = 0; i < this.highlights.length; ++i)
+		{
+			if (this.highlights[i][0] == highlight[0] && this.highlights[i][1] == highlight[1])
+			{
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
+	setHighlight(highlight: [number, number]): void
+	{
+		const ix = this.getHighlight(highlight);
+
+		if (ix > -1)
+		{
+			this.highlights.splice(ix, 1);
+		}
+		else
+		{
+			this.highlights.push(highlight);
 		}
 	}
 
@@ -543,16 +597,22 @@ window.addEventListener("DOMContentLoaded", () =>
 		domScale.appendChild(opG);
 	}
 
-	const toUpdate = ["instrument", "frets", "capo", "key", "accidental", "scale", "page"];
+	const toUpdate = ["instrument", "frets", "capo", "key", "accidental", "scale"];
 
 	toUpdate.forEach((element) =>
 	{
 		$(element).addEventListener("change", (event) =>
 		{
 			fb.uiUpdate(event);
+			fb.clearHighlights();
 			fb.darwFretboardSvg();
-			fb.resizeFretboard(event);
 		});
+	});
+
+	$("page").addEventListener("change", (event) =>
+	{
+		fb.darwFretboardSvg();
+		fb.resizeFretboard(event);
 	});
 
 	$("save_svg").addEventListener("click", () =>
@@ -570,6 +630,26 @@ window.addEventListener("DOMContentLoaded", () =>
 			fb.darwFretboard(pdf);
 			pdf.savePdf(fb.fileTitle);
 		});
+	});
+
+	$("fretboard").addEventListener("click", (event: MouseEvent) =>
+	{
+		let target = event.target as SVGElement;
+
+		if (target.tagName == "text")
+		{
+			target = target.previousElementSibling as SVGElement;
+		}
+
+		if (target && target.tagName == "circle")
+		{
+			const data = target.getAttribute("data");
+			if (data)
+			{
+				fb.setHighlight(JSON.parse(data));
+				fb.darwFretboardSvg();
+			}
+		}
 	});
 });
 

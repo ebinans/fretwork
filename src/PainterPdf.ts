@@ -85,7 +85,15 @@ export class PainterPdf extends Painter
 			.stroke(stroke);
 	}
 
-	circle(radius: number, cx: number, cy: number, fill: string, stroke?: string, width?: number): void
+	circle(
+		radius: number,
+		cx: number,
+		cy: number,
+		fill: string,
+		stroke?: string,
+		width?: number,
+		_data?: unknown
+	): void
 	{
 		this.pdf.circle(Utils.mmToPt(cx), Utils.mmToPt(cy), Utils.mmToPt(radius));
 
