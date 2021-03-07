@@ -55,7 +55,7 @@ export class PainterSvg extends Painter
 		this.svg.appendChild(background);
 	}
 
-	textMiddle(text: string, x: number, y: number, size?: number, link?: string, color?: string): void
+	textMiddle(text: string, x: number, y: number, color?: string, size?: number, link?: string): void
 	{
 		const textNode = document.createElementNS(PainterSvg.NS, "text");
 

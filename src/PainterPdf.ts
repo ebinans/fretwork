@@ -54,7 +54,7 @@ export class PainterPdf extends Painter
 		this.pdf.font("DejaVu Sans Bold");
 	}
 
-	textMiddle(text: string, x: number, y: number, size?: number, link?: string, color?: string): void
+	textMiddle(text: string, x: number, y: number, color?: string, size?: number, link?: string): void
 	{
 		this.pdf
 			.fillColor(color ? color : Painter.DEFAULT_FONT_COLOR)

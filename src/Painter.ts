@@ -14,7 +14,7 @@ export abstract class Painter
 	static readonly DEFAULT_FONT_COLOR = "#333333";
 
 	abstract page(pageW: number, pageH: number): void;
-	abstract textMiddle(text: string, x: number, y: number, size?: number, link?: string, color?: string): void;
+	abstract textMiddle(text: string, x: number, y: number, color?: string, size?: number, link?: string): void;
 
 	abstract circle(
 		radius: number,

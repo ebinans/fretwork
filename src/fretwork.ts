@@ -77,12 +77,12 @@ class Fretboard
 
 	// https://personal.sron.nl/~pault/#fig:scheme_light
 	private static COLORS: readonly string[] = [
-		"#77aadd",
-		"#eedd88",
-		"#ee8866",
 		"#99ddff",
-		"#bbcc33",
+		"#eedd88",
 		"#ffaabb",
+		"#77aadd",
+		"#bbcc33",
+		"#ee8866",
 		"#44bb99",
 		"#dddddd",
 		"#aaaa00",
@@ -173,11 +173,13 @@ class Fretboard
 			.replace(/♭/g, " flat")
 			.replace(/[^A-Za-z0-9]+/g, "_");
 
-		painter.textMiddle(this.title, pageW / 2, Fretboard.PAGE_TOP, 4);
+		painter.textMiddle(this.title, pageW / 2, Fretboard.PAGE_TOP, undefined, 4);
+
 		painter.textMiddle(
 			"fretwork.eb.lv",
 			pageW / 2,
 			pageH - Fretboard.PAGE_BOTTOM,
+			undefined,
 			undefined,
 			"https://fretwork.eb.lv"
 		);
@@ -201,8 +203,6 @@ class Fretboard
 				`Capo ${Utils.toRoman(param.capo)}`,
 				Fretboard.LEFT,
 				Fretboard.STRING_TOP - 5,
-				undefined,
-				undefined,
 				tinycolor("#ee8866").darken(12).toHexString()
 			);
 		}
@@ -250,23 +250,20 @@ class Fretboard
 				{
 					const colorIndex = Math.floor((12 + pitch - degrees[0]) / notes.length) + 1;
 
-					let circleColor = tinycolor(Fretboard.COLORS[colorIndex]).darken(12).toHexString();
-					let circleFillColor = Fretboard.COLORS[colorIndex];
+					let circleFillColor = tinycolor(Fretboard.COLORS[colorIndex]);
+					let circleColor = circleFillColor.clone().darken(12);
 
 					if (noteIndex == degrees[0])
 					{
-						circleFillColor = "white";
+						circleFillColor = tinycolor("white");
 					}
 
 					const shadow = this.highlights.length && this.getHighlight([x, y]) == -1;
 
 					if (shadow)
 					{
-						circleFillColor = tinycolor.mix(
-							tinycolor(circleFillColor).desaturate(40),
-							"white", 40).toHexString();
-
-						circleColor = tinycolor.mix(tinycolor(circleColor).desaturate(40), "white", 40).toHexString();
+						circleFillColor = tinycolor.mix(circleFillColor.clone().desaturate(40), "white", 40);
+						circleColor = tinycolor.mix(circleColor.clone().desaturate(40), "white", 40);
 					}
 
 					let cx = Fretboard.LEFT + x * fretSpacing - fretSpacing / 2;
@@ -280,8 +277,8 @@ class Fretboard
 						Fretboard.STRING_SPACING / 2.5,
 						cx,
 						Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING,
-						circleFillColor,
-						circleColor,
+						circleFillColor.toHexString(),
+						circleColor.toHexString(),
 						0.5,
 						[x, y]
 					);
@@ -290,8 +287,6 @@ class Fretboard
 						notes[noteIndex],
 						cx,
 						Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING,
-						undefined,
-						undefined,
 						shadow ? tinycolor.mix("#333333", "white", 40).toHexString() : undefined
 					);
 				}
@@ -558,9 +553,9 @@ window.addEventListener("DOMContentLoaded", () =>
 
 			INSTRUMENTS[i].tuning[j].pitches.forEach((x: number) =>
 			{
-				op.text +=
-					`${Fretboard.CHROMATIC_NOTES[0][Utils.uMod(x, 12)]
-					}\uFE0E${String.fromCharCode(0x2080 + Math.floor(2 + (x - 3) / 12))}`;
+				op.text += `${Fretboard.CHROMATIC_NOTES[0][Utils.uMod(x, 12)]}\uFE0E${String.fromCharCode(
+					0x2080 + Math.floor(2 + (x - 3) / 12)
+				)}`;
 			});
 
 			op.text += ")";
@@ -617,8 +612,12 @@ window.addEventListener("DOMContentLoaded", () =>
 
 	$("save_svg").addEventListener("click", () =>
 	{
-		Utils.saveAs(`data:image/svg+xml,${encodeURIComponent(
-			`<?xml version="1.0" encoding="UTF-8"?>${$("fretboard").innerHTML}`)}`, fb.fileTitle);
+		Utils.saveAs(
+			`data:image/svg+xml,${encodeURIComponent(
+				`<?xml version="1.0" encoding="UTF-8"?>${$("fretboard").innerHTML}`
+			)}`,
+			fb.fileTitle
+		);
 	});
 
 	$("save_pdf").addEventListener("click", () =>
