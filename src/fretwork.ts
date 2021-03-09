@@ -12,6 +12,7 @@ import { Painter } from "./Painter";
 import { Utils } from "./Utils";
 import { Scale, INSTRUMENTS, SCALES } from "./definitions";
 import tinycolor = require("tinycolor2");
+import equal = require("deep-equal");
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -238,16 +239,19 @@ class Fretboard
 			}
 		}
 
+		this.pitchMatrix = Array(instrument.strings).fill(0).map(_ => Array(param.frets + 1).fill(0));
+
 		for (let y = instrument.strings - 1; y > -1; --y)
 		{
 			for (let x = 0; x < param.frets + 1; ++x)
 			{
 				const pitch = tuning.pitches[instrument.strings - y - 1] + param.capo + x;
-
 				const noteIndex = Utils.uMod(pitch, notes.length);
 
 				if (degrees.includes(noteIndex) || degreesAdd?.includes(noteIndex))
 				{
+					this.pitchMatrix[y][x] = 1;
+
 					const colorIndex = Math.floor((12 + pitch - degrees[0]) / notes.length) + 1;
 
 					let circleFillColor = tinycolor(Fretboard.COLORS[colorIndex]);
@@ -262,8 +266,8 @@ class Fretboard
 
 					if (shadow)
 					{
-						circleFillColor = tinycolor.mix(circleFillColor.clone().desaturate(40), "white", 40);
-						circleColor = tinycolor.mix(circleColor.clone().desaturate(40), "white", 40);
+						circleFillColor = tinycolor.mix(circleFillColor.clone().desaturate(40), "white", 45);
+						circleColor = tinycolor.mix(circleColor.clone().desaturate(40), "white", 45);
 					}
 
 					let cx = Fretboard.LEFT + x * fretSpacing - fretSpacing / 2;
@@ -295,6 +299,7 @@ class Fretboard
 	}
 
 	highlights: [number, number][] = [];
+	pitchMatrix: number[][] = [[]];
 
 	clearHighlights(): void
 	{
@@ -326,6 +331,75 @@ class Fretboard
 		{
 			this.highlights.push(highlight);
 		}
+	}
+
+	setPosition(pos: number): void
+	{
+		const positions =
+			[
+				[
+					[1, 1, 0, 1],
+					[0, 1, 0, 1],
+					[1, 0, 1, 1],
+					[1, 0, 1, 1],
+					[1, 1, 0, 1],
+					[1, 1, 0, 1],
+				],
+				[
+					[0, 1, 0, 1, 1],
+					[0, 1, 0, 1, 1],
+					[1, 1, 0, 1, 0],
+					[1, 1, 0, 1, 0],
+					[0, 1, 0, 1, 0],
+					[0, 1, 0, 1, 1],
+				],
+				[
+					[1, 1, 0, 1],
+					[1, 1, 0, 1],
+					[1, 0, 1, 0],
+					[1, 0, 1, 1],
+					[1, 0, 1, 1],
+					[1, 1, 0, 1],
+				],
+				[
+					[0, 1, 0, 1, 0],
+					[0, 1, 0, 1, 1],
+					[1, 0, 1, 1, 0],
+					[1, 1, 0, 1, 0],
+					[1, 1, 0, 1, 0],
+					[0, 1, 0, 1, 0],
+				],
+				[
+					[0, 1, 0, 1, 1],
+					[0, 1, 1, 0, 1],
+					[1, 1, 0, 1, 0],
+					[0, 1, 0, 1, 0],
+					[0, 1, 0, 1, 1],
+					[0, 1, 0, 1, 1],
+				],
+			];
+
+		this.clearHighlights();
+
+		const p = positions[pos - 1];
+
+		for (let s = 0; s < this.pitchMatrix[0].length + 1 - p[0].length; ++s)
+		{
+			const fragment = this.pitchMatrix.map(x => x.slice(s, s + p[0].length));
+
+			if (equal(p, fragment))
+			{
+				for (let y = 0; y < p.length; ++y)
+				{
+					for (let x = 0; x < p[y].length; ++x)
+					{
+						this.setHighlight([x + s, y]);
+					}
+				}
+			}
+		}
+
+		this.darwFretboardSvg();
 	}
 
 	darwFretboardSvg(): void
@@ -437,6 +511,16 @@ class Fretboard
 		{
 			this.dom.flat.disabled = false;
 			this.dom.sharp.disabled = false;
+		}
+
+		if (INSTRUMENTS[param.instrument[0]].tuning[param.instrument[1]].caged &&
+			SCALES[param.scale[0]].caged)
+		{
+			$("positions").style.visibility = "visible";
+		}
+		else
+		{
+			$("positions").style.visibility = "collapse";
 		}
 	}
 
@@ -650,6 +734,25 @@ window.addEventListener("DOMContentLoaded", () =>
 			}
 		}
 	});
+
+	$("clear").addEventListener("click", (_event: MouseEvent) =>
+	{
+		fb.clearHighlights();
+		fb.darwFretboardSvg();
+	});
+
+	for (let i = 1; i < 6; ++i)
+	{
+		$(`position${i}`).addEventListener("click", (event: MouseEvent) =>
+		{
+			const bt = event.target as HTMLAnchorElement;
+
+			if (bt.textContent)
+			{
+				fb.setPosition(Number.parseInt(bt.textContent));
+			}
+		});
+	}
 });
 
 //----------------------------------------------------------------------------------------------------------------------

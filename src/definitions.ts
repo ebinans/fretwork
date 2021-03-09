@@ -20,6 +20,7 @@ export interface Instrument
 	readonly tuning: readonly {
 		readonly name: string;
 		readonly pitches: readonly number[];
+		readonly caged?: boolean;
 	}[];
 }
 
@@ -33,6 +34,7 @@ export const INSTRUMENTS: readonly Instrument[] = [
 			{
 				name: "Standard",
 				pitches: [7, 12, 17, 22, 26, 31],
+				caged: true,
 			},
 			{
 				name: "Drop A",
@@ -144,6 +146,7 @@ export interface ScaleGroup
 {
 	readonly label: string;
 	readonly scales: readonly Scale[];
+	readonly caged?: boolean;
 }
 
 export const SCALES: readonly ScaleGroup[] = [
@@ -158,6 +161,7 @@ export const SCALES: readonly ScaleGroup[] = [
 	},
 	{
 		label: "Diatonic",
+		caged: true,
 		scales: [
 			{
 				name: "Major (Ionian)",

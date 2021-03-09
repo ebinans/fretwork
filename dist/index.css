@@ -73,6 +73,10 @@ body {
 	background-color: #ebebeb;
 }
 
+a {
+	color: #538bce;
+}
+
 tr {
 	white-space: nowrap;
 }
