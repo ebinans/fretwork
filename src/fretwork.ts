@@ -335,65 +335,27 @@ class Fretboard
 
 	setPosition(pos: number): void
 	{
-		const positions =
-			[
-				[
-					[1, 1, 0, 1],
-					[0, 1, 0, 1],
-					[1, 0, 1, 1],
-					[1, 0, 1, 1],
-					[1, 1, 0, 1],
-					[1, 1, 0, 1],
-				],
-				[
-					[0, 1, 0, 1, 1],
-					[0, 1, 0, 1, 1],
-					[1, 1, 0, 1, 0],
-					[1, 1, 0, 1, 0],
-					[0, 1, 0, 1, 0],
-					[0, 1, 0, 1, 1],
-				],
-				[
-					[1, 1, 0, 1],
-					[1, 1, 0, 1],
-					[1, 0, 1, 0],
-					[1, 0, 1, 1],
-					[1, 0, 1, 1],
-					[1, 1, 0, 1],
-				],
-				[
-					[0, 1, 0, 1, 0],
-					[0, 1, 0, 1, 1],
-					[1, 0, 1, 1, 0],
-					[1, 1, 0, 1, 0],
-					[1, 1, 0, 1, 0],
-					[0, 1, 0, 1, 0],
-				],
-				[
-					[0, 1, 0, 1, 1],
-					[0, 1, 1, 0, 1],
-					[1, 1, 0, 1, 0],
-					[0, 1, 0, 1, 0],
-					[0, 1, 0, 1, 1],
-					[0, 1, 0, 1, 1],
-				],
-			];
-
 		this.clearHighlights();
 
-		const p = positions[pos - 1];
+		const param = this.getUiParams();
+		const caged = SCALES[param.scale[0]].caged;
 
-		for (let s = 0; s < this.pitchMatrix[0].length + 1 - p[0].length; ++s)
+		if (caged && caged.length > pos - 1)
 		{
-			const fragment = this.pitchMatrix.map(x => x.slice(s, s + p[0].length));
+			const p = caged[pos - 1];
 
-			if (equal(p, fragment))
+			for (let s = 0; s < this.pitchMatrix[0].length + 1 - p[0].length; ++s)
 			{
-				for (let y = 0; y < p.length; ++y)
+				const fragment = this.pitchMatrix.map(x => x.slice(s, s + p[0].length));
+
+				if (equal(p, fragment))
 				{
-					for (let x = 0; x < p[y].length; ++x)
+					for (let y = 0; y < p.length; ++y)
 					{
-						this.setHighlight([x + s, y]);
+						for (let x = 0; x < p[y].length; ++x)
+						{
+							this.setHighlight([x + s, y]);
+						}
 					}
 				}
 			}
