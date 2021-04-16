@@ -115,6 +115,12 @@ tr {
 	width: 100%;
 }
 
+input[type="checkbox"] {
+	vertical-align: middle;
+	position: relative;
+	bottom: 1px;
+}
+
 .workspace {
 	background-color: #aaaaaa;
 	padding: 5px;

@@ -106,7 +106,8 @@ class Fretboard
 		instrumentName: $<HTMLSpanElement>("name"),
 		flat: $<HTMLOptionElement>("flat"),
 		sharp: $<HTMLOptionElement>("sharp"),
-		capo: $<HTMLInputElement>("capo")
+		capo: $<HTMLInputElement>("capo"),
+		intervals: $<HTMLInputElement>("intervals")
 	};
 
 	private getUiParams(): Params
@@ -149,7 +150,15 @@ class Fretboard
 
 		let notes: readonly string[];
 
-		if (scale.degrees.length == 7)
+
+		if (this.dom.intervals.checked)
+		{
+			const notesx = ["R", "m2", "M2", "m3", "M3", "P4", "d5", "P5", "m6", "M6", "m7", "M7"];
+
+			notes = notesx.slice(notesx.length - param.key)
+				.concat(notesx.slice(0, notesx.length - param.key));
+		}
+		else if (scale.degrees.length == 7)
 		{
 			notes = Fretboard.getBaseNotes(param.key, param.accidental, scale)[1];
 		}
@@ -291,7 +300,8 @@ class Fretboard
 						notes[noteIndex],
 						cx,
 						Fretboard.STRING_TOP + y * Fretboard.STRING_SPACING,
-						shadow ? tinycolor.mix("#333333", "white", 40).toHexString() : undefined
+						shadow ? tinycolor.mix("#333333", "white", 40).toHexString() : undefined,
+						this.dom.intervals.checked ? 2.4 : 2.6
 					);
 				}
 			}
@@ -638,7 +648,7 @@ window.addEventListener("DOMContentLoaded", () =>
 		domScale.appendChild(opG);
 	}
 
-	const toUpdate = ["instrument", "frets", "capo", "key", "accidental", "scale"];
+	const toUpdate = ["instrument", "frets", "capo", "key", "accidental", "scale", "intervals"];
 
 	toUpdate.forEach((element) =>
 	{

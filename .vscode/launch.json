@@ -9,7 +9,7 @@
 			"preLaunchTask": "npm: dev",
 			"pathMappings": [
 				{
-					"url": "file:///C:/Source",
+					"url": "file:///C:/Source/3rd",
 					"path": "${workspaceFolder}"
 				}
 			]
