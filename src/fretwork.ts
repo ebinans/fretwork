@@ -648,7 +648,7 @@ window.addEventListener("DOMContentLoaded", () =>
 		domScale.appendChild(opG);
 	}
 
-	const toUpdate = ["instrument", "frets", "capo", "key", "accidental", "scale", "intervals"];
+	const toUpdate = ["instrument", "frets", "capo", "key", "accidental", "scale"];
 
 	toUpdate.forEach((element) =>
 	{
@@ -658,6 +658,11 @@ window.addEventListener("DOMContentLoaded", () =>
 			fb.clearHighlights();
 			fb.darwFretboardSvg();
 		});
+	});
+
+	$("intervals").addEventListener("change", (_event) =>
+	{
+		fb.darwFretboardSvg();
 	});
 
 	$("page").addEventListener("change", (event) =>
