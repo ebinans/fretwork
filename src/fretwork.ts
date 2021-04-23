@@ -364,7 +364,10 @@ class Fretboard
 					{
 						for (let x = 0; x < p[y].length; ++x)
 						{
-							this.setHighlight([x + s, y]);
+							if (p[y][x] == 1)
+							{
+								this.setHighlight([x + s, y]);
+							}
 						}
 					}
 				}
