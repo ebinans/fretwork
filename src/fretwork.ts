@@ -10,9 +10,8 @@ import { PainterSvg } from "./PainterSvg";
 import { PainterPdf } from "./PainterPdf";
 import { Painter } from "./Painter";
 import { Utils } from "./Utils";
-import { Scale, INSTRUMENTS, SCALES } from "./definitions";
+import { Scale, INSTRUMENTS, SCALES, PATTERNS } from "./definitions";
 import tinycolor = require("tinycolor2");
-import equal = require("deep-equal");
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -343,34 +342,70 @@ class Fretboard
 		}
 	}
 
-	setPosition(pos: number): void
+	private static equal(a: readonly (readonly number[])[], b: readonly (readonly number[])[]): boolean
+	{
+		if (a.length != b.length)
+		{
+			return false;
+		}
+
+		for (let i = 0; i < a.length; ++i)
+		{
+			if (a[i].length != b[i].length)
+			{
+				return false;
+			}
+
+			for (let j = 0; j < a[i].length; ++j)
+			{
+				if (Math.abs(a[i][j]) != b[i][j])
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	setPosition(name: string): void
 	{
 		this.clearHighlights();
 
 		const param = this.getUiParams();
-		const caged = SCALES[param.scale[0]].caged;
+		const instrument = INSTRUMENTS[param.instrument[0]];
+		const scale = SCALES[param.scale[0]].scales[param.scale[1]];
 
-		if (caged && caged.length > pos - 1)
+		for (const pattern of PATTERNS)
 		{
-			const p = caged[pos - 1];
-
-			for (let s = 0; s < this.pitchMatrix[0].length + 1 - p[0].length; ++s)
+			if (pattern.scales.includes(scale.scaleId) &&
+				pattern.tunings.includes(instrument.tuning[param.instrument[1]].tuningId))
 			{
-				const fragment = this.pitchMatrix.map(x => x.slice(s, s + p[0].length));
+				const ptrn = pattern.pattern.find(po => po.name == name);
 
-				if (equal(p, fragment))
+				if (ptrn)
 				{
-					for (let y = 0; y < p.length; ++y)
+					for (let s = 0; s < this.pitchMatrix[0].length + 1 - ptrn.pattern[0].length; ++s)
 					{
-						for (let x = 0; x < p[y].length; ++x)
+						const fragment = this.pitchMatrix.map(x => x.slice(s, s + ptrn.pattern[0].length));
+
+						if (Fretboard.equal(ptrn.pattern, fragment))
 						{
-							if (p[y][x] == 1)
+							for (let y = 0; y < ptrn.pattern.length; ++y)
 							{
-								this.setHighlight([x + s, y]);
+								for (let x = 0; x < ptrn.pattern[y].length; ++x)
+								{
+									if (ptrn.pattern[y][x] == 1)
+									{
+										this.setHighlight([x + s, y]);
+									}
+								}
 							}
 						}
 					}
 				}
+
+				break;
 			}
 		}
 
@@ -488,15 +523,40 @@ class Fretboard
 			this.dom.sharp.disabled = false;
 		}
 
-		if (INSTRUMENTS[param.instrument[0]].tuning[param.instrument[1]].caged &&
-			SCALES[param.scale[0]].caged)
+		let showPattern = false;
+
+		for (const pattern of PATTERNS)
 		{
-			$("positions").style.visibility = "visible";
+			showPattern = pattern.scales.includes(scale.scaleId) &&
+				pattern.tunings.includes(instrument.tuning[param.instrument[1]].tuningId);
+
+			if (showPattern)
+			{
+				const poSel = $("positions") as HTMLSelectElement;
+
+				while (poSel.firstChild)
+				{
+					poSel.firstChild.remove();
+				}
+
+				const op = document.createElement("option");
+				op.value = "-";
+				op.text = "-";
+				poSel.appendChild(op);
+
+				pattern.pattern.forEach((p) =>
+				{
+					const op = document.createElement("option");
+					op.value = p.name;
+					op.text = p.name;
+					poSel.appendChild(op);
+				});
+
+				break;
+			}
 		}
-		else
-		{
-			$("positions").style.visibility = "collapse";
-		}
+
+		$("lb_positions").style.visibility = showPattern ? "visible" : "collapse";
 	}
 
 	private static getBaseNotes(
@@ -715,24 +775,10 @@ window.addEventListener("DOMContentLoaded", () =>
 		}
 	});
 
-	$("clear").addEventListener("click", (_event: MouseEvent) =>
+	$("positions").addEventListener("change", (_event) =>
 	{
-		fb.clearHighlights();
-		fb.darwFretboardSvg();
+		fb.setPosition(($("positions") as HTMLSelectElement).value);
 	});
-
-	for (let i = 1; i < 6; ++i)
-	{
-		$(`position${i}`).addEventListener("click", (event: MouseEvent) =>
-		{
-			const bt = event.target as HTMLAnchorElement;
-
-			if (bt.textContent)
-			{
-				fb.setPosition(Number.parseInt(bt.textContent));
-			}
-		});
-	}
 });
 
 //----------------------------------------------------------------------------------------------------------------------

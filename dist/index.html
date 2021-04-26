@@ -60,10 +60,8 @@
 							<td><span id="name"></span>:</td>
 							<td>
 								<select id="instrument"></select>
-								<span>Frets:</span>
-								<input type="number" id="frets" min="12" max="27" value="22" />
-								<span>Capo:</span>
-								<input type="number" id="capo" min="0" max="11" value="0" />
+								<label>Frets: <input type="number" id="frets" min="12" max="27" value="22" /></label>
+								<label>Capo: <input type="number" id="capo" min="0" max="11" value="0" /></label>
 							</td>
 							<td>
 								<a href="https://github.com/ebinans/fretwork" target="_blank">
@@ -94,15 +92,10 @@
 								</select>
 								<select id="scale"></select>
 								<label>Intervals<input id="intervals" type="checkbox" /></label>
-								<span id="positions" style="visibility: collapse">
-									<span>Position:</span>
-									<a id="position1" href="javascript:">1</a>
-									<a id="position2" href="javascript:">2</a>
-									<a id="position3" href="javascript:">3</a>
-									<a id="position4" href="javascript:">4</a>
-									<a id="position5" href="javascript:">5</a>
-									<a id="clear" href="javascript:">✕</a>
-								</span>
+								<label id="lb_positions" style="visibility: collapse">
+									Positions:
+									<select id="positions"></select>
+								</label>
 							</td>
 							<td>
 								<select id="page">
