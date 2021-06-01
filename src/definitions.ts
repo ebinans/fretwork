@@ -251,7 +251,6 @@ export const SCALES: readonly ScaleGroup[] = [
 				name: "Minor (Aeolian)",
 				scaleId: ScaleId.MinorAeolian,
 				degrees: [0, 2, 3, 5, 7, 8, 10],
-				selected: true,
 			},
 			{
 				name: "Locrian",
@@ -287,6 +286,7 @@ export const SCALES: readonly ScaleGroup[] = [
 				name: "Minor pentatonic",
 				scaleId: ScaleId.MinorPentatonic,
 				degrees: [0, -1, 3, 5, 7, -1, 10],
+				selected: true,
 			},
 		],
 	},
