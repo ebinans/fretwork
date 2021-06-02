@@ -546,6 +546,14 @@ class Fretboard
 
 				pattern.pattern.forEach((p) =>
 				{
+					if (p.scales)
+					{
+						if (!p.scales.includes(scale.scaleId))
+						{
+							return;
+						}
+					}
+
 					const op = document.createElement("option");
 					op.value = p.name;
 					op.text = p.name;

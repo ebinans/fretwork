@@ -317,6 +317,7 @@ export interface Pattern
 	readonly scales: readonly ScaleId[];
 	readonly pattern: readonly {
 		readonly name: string;
+		readonly scales?: readonly ScaleId[];
 		readonly pattern: ReadonlyArray<ReadonlyArray<number>>;
 	}[];
 }
@@ -455,7 +456,10 @@ export const PATTERNS: readonly Pattern[] =
 					]
 				},
 				{
-					name: "3 octaves",
+					name: "3x oct m",
+					scales: [
+						ScaleId.MinorPentatonic,
+					],
 					pattern: [
 						[-1, +0, +0, -1, +0, -1, +0, -1, +0, +0, +1, +0, +1],
 						[-1, +0, +0, -1, +0, -1, +0, +0, +1, +0, +1, +0, +1],
@@ -463,6 +467,20 @@ export const PATTERNS: readonly Pattern[] =
 						[-1, +0, -1, +0, +0, +1, +0, +1, +0, +1, +0, +0, -1],
 						[-1, +0, -1, +0, +0, +1, +0, +1, +0, +0, -1, +0, -1],
 						[+1, +0, +0, +1, +0, +1, +0, +1, +0, +0, -1, +0, -1],
+					]
+				},
+				{
+					name: "3x oct M",
+					scales: [
+						ScaleId.MajorPentatonic,
+					],
+					pattern: [
+						[-1, +0, -1, +0, -1, +0, +0, +1, +0, +1],
+						[-1, +0, -1, +0, +0, +1, +0, +1, +0, +1],
+						[+0, -1, +0, +0, +1, +0, +1, +0, +0, -1],
+						[+0, +0, +1, +0, +1, +0, +1, +0, +0, -1],
+						[+0, +0, +1, +0, +1, +0, +0, -1, +0, -1],
+						[+1, +0, +1, +0, +1, +0, +0, -1, +0, -1],
 					]
 				},
 			],
@@ -530,7 +548,24 @@ export const PATTERNS: readonly Pattern[] =
 					]
 				},
 				{
-					name: "3 octaves",
+					name: "3x oct m",
+					scales: [
+						ScaleId.BluesMinor,
+					],
+					pattern: [
+						[-1, +0, +0, -1, +0, -1, -1, -1, +0, +0, +1, +0, +1],
+						[-1, +0, +0, -1, +0, -1, +0, +0, +1, +0, +1, +1, +1],
+						[-1, +0, -1, -1, -1, +0, +0, +1, +0, +1, +0, +0, -1],
+						[-1, +0, -1, +0, +0, +1, +0, +1, +1, +1, +0, +0, -1],
+						[-1, -1, -1, +0, +0, +1, +0, +1, +0, +0, -1, +0, -1],
+						[+1, +0, +0, +1, +0, +1, +1, +1, +0, +0, -1, +0, -1],
+					]
+				},
+				{
+					name: "3x oct M",
+					scales: [
+						ScaleId.BluesMajor,
+					],
 					pattern: [
 						[-1, +0, -1, -1, -1, +0, +0, +1, +0, +1],
 						[-1, +0, -1, +0, +0, +1, +0, +1, +1, +1],
