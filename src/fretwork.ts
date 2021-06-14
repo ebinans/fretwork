@@ -654,6 +654,16 @@ window.addEventListener("DOMContentLoaded", () =>
 
 	window.addEventListener("load", (event) =>
 	{
+		const freatboard: SVGGElement = $("fretboard");
+
+		if (freatboard.parentElement)
+		{
+			if (freatboard.parentElement.clientWidth < freatboard.parentElement.clientHeight)
+			{
+				$<HTMLInputElement>("page").value = "1";
+			}
+		}
+
 		fb.uiUpdate(event);
 		fb.darwFretboardSvg();
 		fb.resizeFretboard(event);
