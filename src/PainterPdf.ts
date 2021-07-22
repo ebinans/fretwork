@@ -92,10 +92,20 @@ export class PainterPdf extends Painter
 		fill: string,
 		stroke?: string,
 		width?: number,
+		dash?: [number, number],
 		_data?: unknown
 	): void
 	{
 		this.pdf.circle(Utils.mmToPt(cx), Utils.mmToPt(cy), Utils.mmToPt(radius));
+
+		if (dash)
+		{
+			this.pdf.dash(Utils.mmToPt(dash[0]), { space: Utils.mmToPt(dash[1]) });
+		}
+		else
+		{
+			this.pdf.undash();
+		}
 
 		if (stroke && width)
 		{

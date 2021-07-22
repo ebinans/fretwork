@@ -263,19 +263,13 @@ class Fretboard
 					const colorIndex = Math.floor((12 + pitch - degrees[0]) / notes.length) + 1;
 
 					let circleFillColor = tinycolor(Fretboard.COLORS[colorIndex]);
-					let circleColor = circleFillColor.clone().darken(12);
-
-					if (noteIndex == degrees[0])
-					{
-						circleFillColor = tinycolor("white");
-					}
+					const circleColor = circleFillColor.clone().darken(12);
 
 					const shadow = this.highlights.length && this.getHighlight([x, y]) == -1;
 
-					if (shadow)
+					if (noteIndex == degrees[0] || shadow)
 					{
-						circleFillColor = tinycolor.mix(circleFillColor.clone().desaturate(40), "white", 45);
-						circleColor = tinycolor.mix(circleColor.clone().desaturate(40), "white", 45);
+						circleFillColor = tinycolor("white");
 					}
 
 					let cx = Fretboard.LEFT + x * fretSpacing - fretSpacing / 2;
@@ -292,6 +286,7 @@ class Fretboard
 						circleFillColor.toHexString(),
 						circleColor.toHexString(),
 						0.5,
+						shadow ? [1.5, 0.5] : undefined,
 						[x, y]
 					);
 

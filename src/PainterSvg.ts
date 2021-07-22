@@ -121,6 +121,7 @@ export class PainterSvg extends Painter
 		fill: string,
 		stroke?: string,
 		width?: number,
+		dash?: [number, number],
 		data?: unknown
 	): void
 	{
@@ -135,6 +136,11 @@ export class PainterSvg extends Painter
 		{
 			circle.setAttribute("stroke", stroke);
 			circle.setAttribute("stroke-width", mm(width));
+		}
+
+		if (dash)
+		{
+			circle.setAttribute("stroke-dasharray", `${dash[0]}mm ${dash[1]}mm`);
 		}
 
 		if (data)

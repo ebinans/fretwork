@@ -28,5 +28,5 @@
 			"file": "${workspaceFolder}/dist/index.html",
 			"preLaunchTask": "npm: dev"
 		}
-	],
+	]
 }

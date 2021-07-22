@@ -23,6 +23,7 @@ export abstract class Painter
 		fill: string,
 		stroke?: string,
 		width?: number,
+		dash?: [number, number],
 		data?: unknown
 	): void;
 
