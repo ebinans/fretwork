@@ -286,7 +286,7 @@ class Fretboard
 						circleFillColor.toHexString(),
 						circleColor.toHexString(),
 						0.5,
-						shadow ? [1.5, 0.5] : undefined,
+						shadow ? (noteIndex == degrees[0]) ? [2, 0.5] : [1.1, 0.4] : undefined,
 						[x, y]
 					);
 
