@@ -154,8 +154,8 @@ class Fretboard
 		{
 			const notesx = ["R", "m2", "M2", "m3", "M3", "P4", "d5", "P5", "m6", "M6", "m7", "M7"];
 
-			notes = notesx.slice(notesx.length - param.key)
-				.concat(notesx.slice(0, notesx.length - param.key));
+			notes = notesx.slice(notesx.length - param.key - param.accidental)
+				.concat(notesx.slice(0, notesx.length - param.key - param.accidental));
 		}
 		else if (scale.degrees.length == 7)
 		{
