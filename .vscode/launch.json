@@ -16,14 +16,14 @@
 		},
 		{
 			"name": "Edge",
-			"type": "pwa-msedge",
+			"type": "msedge",
 			"request": "launch",
 			"file": "${workspaceFolder}/dist/index.html",
 			"preLaunchTask": "npm: dev"
 		},
 		{
 			"name": "Chrome",
-			"type": "pwa-chrome",
+			"type": "chrome",
 			"request": "launch",
 			"file": "${workspaceFolder}/dist/index.html",
 			"preLaunchTask": "npm: dev"
