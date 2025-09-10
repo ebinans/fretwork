@@ -93,7 +93,7 @@ class Fretboard
 	private title = "";
 	private printStarted = false;
 
-	private readonly freatboard: SVGGElement = $("fretboard");
+	private readonly fretboard: SVGGElement = $("fretboard");
 
 	private readonly dom = {
 		page: $<HTMLInputElement>("page"),
@@ -122,7 +122,7 @@ class Fretboard
 		};
 	}
 
-	darwFretboard(painter: Painter): void
+	drawFretboard(painter: Painter): void
 	{
 		const param = this.getUiParams();
 
@@ -404,26 +404,26 @@ class Fretboard
 			}
 		}
 
-		this.darwFretboardSvg();
+		this.drawFretboardSvg();
 	}
 
-	darwFretboardSvg(): void
+	drawFretboardSvg(): void
 	{
-		while (this.freatboard.firstChild)
+		while (this.fretboard.firstChild)
 		{
-			this.freatboard.firstChild.remove();
+			this.fretboard.firstChild.remove();
 		}
 
 		const painter = new PainterSvg();
 
-		this.darwFretboard(painter);
+		this.drawFretboard(painter);
 
-		this.freatboard.appendChild(painter.getSvg());
+		this.fretboard.appendChild(painter.getSvg());
 	}
 
 	resizeFretboard(event: Event): void
 	{
-		const svg = this.freatboard.firstChild as SVGSVGElement;
+		const svg = this.fretboard.firstChild as SVGSVGElement;
 
 		if (event.type == "beforeprint")
 		{
@@ -436,10 +436,10 @@ class Fretboard
 
 		let scale = 1;
 
-		if (this.freatboard.parentElement && !this.printStarted)
+		if (this.fretboard.parentElement && !this.printStarted)
 		{
-			const scaleW = this.freatboard.parentElement.clientWidth / svg.width.baseVal.value;
-			const scaleH = this.freatboard.parentElement.clientHeight / svg.height.baseVal.value;
+			const scaleW = this.fretboard.parentElement.clientWidth / svg.width.baseVal.value;
+			const scaleH = this.fretboard.parentElement.clientHeight / svg.height.baseVal.value;
 			scale = Math.min(scaleW, scaleH);
 		}
 		else
@@ -472,8 +472,8 @@ class Fretboard
 
 		const trans = svg.createSVGTransform();
 		trans.setScale(scale, scale);
-		this.freatboard.transform.baseVal.clear();
-		this.freatboard.transform.baseVal.appendItem(trans);
+		this.fretboard.transform.baseVal.clear();
+		this.fretboard.transform.baseVal.appendItem(trans);
 	}
 
 	uiUpdate(event: Event): void
@@ -649,18 +649,18 @@ window.addEventListener("DOMContentLoaded", () =>
 
 	window.addEventListener("load", (event) =>
 	{
-		const freatboard: SVGGElement = $("fretboard");
+		const fretboard: SVGGElement = $("fretboard");
 
-		if (freatboard.parentElement)
+		if (fretboard.parentElement)
 		{
-			if (freatboard.parentElement.clientWidth < freatboard.parentElement.clientHeight)
+			if (fretboard.parentElement.clientWidth < fretboard.parentElement.clientHeight)
 			{
 				$<HTMLInputElement>("page").value = "1";
 			}
 		}
 
 		fb.uiUpdate(event);
-		fb.darwFretboardSvg();
+		fb.drawFretboardSvg();
 		fb.resizeFretboard(event);
 	});
 
@@ -732,18 +732,18 @@ window.addEventListener("DOMContentLoaded", () =>
 		{
 			fb.uiUpdate(event);
 			fb.clearHighlights();
-			fb.darwFretboardSvg();
+			fb.drawFretboardSvg();
 		});
 	});
 
 	$("intervals").addEventListener("change", (_event) =>
 	{
-		fb.darwFretboardSvg();
+		fb.drawFretboardSvg();
 	});
 
 	$("page").addEventListener("change", (event) =>
 	{
-		fb.darwFretboardSvg();
+		fb.drawFretboardSvg();
 		fb.resizeFretboard(event);
 	});
 
@@ -763,7 +763,7 @@ window.addEventListener("DOMContentLoaded", () =>
 
 		pdf.loadFonts().then(() =>
 		{
-			fb.darwFretboard(pdf);
+			fb.drawFretboard(pdf);
 			pdf.savePdf(fb.fileTitle);
 		});
 	});
@@ -783,7 +783,7 @@ window.addEventListener("DOMContentLoaded", () =>
 			if (data)
 			{
 				fb.setHighlight(JSON.parse(data));
-				fb.darwFretboardSvg();
+				fb.drawFretboardSvg();
 			}
 		}
 	});
