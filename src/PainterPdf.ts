@@ -43,9 +43,23 @@ export class PainterPdf extends Painter
 
 	async loadFonts(): Promise<void>
 	{
-		await fetch("font/DejaVuSans-Bold.ttf")
-			.then(response => response.arrayBuffer())
-			.then(font => this.pdf.registerFont("DejaVu Sans Bold", font));
+		try
+		{
+			const response = await fetch("font/DejaVuSans-Bold.ttf");
+
+			if (!response.ok)
+			{
+				throw new Error(`Failed to load font: ${response.status} ${response.statusText}`);
+			}
+
+			const font = await response.arrayBuffer();
+			this.pdf.registerFont("DejaVu Sans Bold", font);
+		}
+		catch (error)
+		{
+			const message = error instanceof Error ? error.message : "Unknown error";
+			throw new Error(`Font loading failed: ${message}`);
+		}
 	}
 
 	page(pageW: number, pageH: number): void
