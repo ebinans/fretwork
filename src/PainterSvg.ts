@@ -77,7 +77,7 @@ export class PainterSvg extends Painter
 		if (link)
 		{
 			const aNode = document.createElementNS(PainterSvg.NS, "a");
-			aNode.setAttribute("href", "https://fretwork.eb.lv/");
+			aNode.setAttribute("href", link);
 			aNode.appendChild(textNode);
 			this.svg.appendChild(aNode);
 		}

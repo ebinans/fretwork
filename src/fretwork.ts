@@ -124,6 +124,7 @@ class Fretboard
 
 	drawFretboard(painter: Painter): void
 	{
+		// Get UI parameters and instrument/scale data
 		const param = this.getUiParams();
 
 		const instrument = INSTRUMENTS[param.instrument[0]];
@@ -134,6 +135,7 @@ class Fretboard
 		const pageW = Fretboard.PAGE_SIZES[param.page][0];
 		const pageH = Fretboard.PAGE_SIZES[param.page][1];
 
+		// Calculate scale degrees adjusted for key and accidental
 		const degrees = scale.degrees.map(x => (x < 0 ? -1 : Utils.uMod(x + param.key + param.accidental, 12)));
 
 		let degreesAdd = scale.add;
@@ -147,6 +149,7 @@ class Fretboard
 
 		painter.page(pageW, pageH);
 
+		// Determine note labels: intervals, diatonic scale names, or chromatic notes
 		let notes: readonly string[];
 
 
@@ -166,6 +169,7 @@ class Fretboard
 			notes = Fretboard.CHROMATIC_NOTES[param.accidental >= 0 ? 0 : 1];
 		}
 
+		// Build title string with instrument, tuning, key, scale, and optional capo
 		const acc = param.accidental == -1 ? "♭ " : param.accidental == 1 ? "♯ " : " ";
 
 		this.title =
@@ -182,6 +186,7 @@ class Fretboard
 			.replace(/♭/g, " flat")
 			.replace(/[^A-Za-z0-9]+/g, "_");
 
+		// Render title and footer
 		painter.textMiddle(this.title, pageW / 2, Fretboard.PAGE_TOP, undefined, 4);
 
 		painter.textMiddle(
@@ -193,6 +198,7 @@ class Fretboard
 			"https://fretwork.eb.lv"
 		);
 
+		// Render vertical fret lines
 		for (let x = 0; x < param.frets + 1; ++x)
 		{
 			painter.line(
@@ -206,6 +212,7 @@ class Fretboard
 			);
 		}
 
+		// Render capo indicator if present
 		if (param.capo)
 		{
 			painter.textMiddle(
@@ -216,6 +223,7 @@ class Fretboard
 			);
 		}
 
+		// Render horizontal string lines
 		for (let y = 0; y < instrument.strings; ++y)
 		{
 			painter.line(
@@ -228,6 +236,7 @@ class Fretboard
 			);
 		}
 
+		// Render fret position markers (dots)
 		if (instrument.dots)
 		{
 			const dots = instrument.dots.slice(param.capo);
@@ -247,6 +256,7 @@ class Fretboard
 			}
 		}
 
+		// Initialize pitch matrix and render notes on fretboard
 		this.pitchMatrix = Array(instrument.strings).fill(0).map(_ => Array(param.frets + 1).fill(0));
 
 		for (let y = instrument.strings - 1; y > -1; --y)
@@ -669,6 +679,7 @@ window.addEventListener("DOMContentLoaded", () =>
 	window.addEventListener("afterprint", fb.resizeFretboard.bind(fb));
 
 	const domInstrument: HTMLSelectElement = $("instrument");
+	const instrumentFragment = document.createDocumentFragment();
 
 	for (let i = 0; i < INSTRUMENTS.length; ++i)
 	{
@@ -695,10 +706,13 @@ window.addEventListener("DOMContentLoaded", () =>
 			opG.appendChild(op);
 		}
 
-		domInstrument.appendChild(opG);
+		instrumentFragment.appendChild(opG);
 	}
 
+	domInstrument.appendChild(instrumentFragment);
+
 	const domScale: HTMLSelectElement = $("scale");
+	const scaleFragment = document.createDocumentFragment();
 
 	for (let i = 0; i < SCALES.length; ++i)
 	{
@@ -721,8 +735,10 @@ window.addEventListener("DOMContentLoaded", () =>
 			opG.appendChild(op);
 		}
 
-		domScale.appendChild(opG);
+		scaleFragment.appendChild(opG);
 	}
+
+	domScale.appendChild(scaleFragment);
 
 	const toUpdate = ["instrument", "frets", "capo", "key", "accidental", "scale"];
 
